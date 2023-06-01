@@ -5,6 +5,10 @@ import MapboxDirections
 import MapboxCoreNavigation
 import MapboxNavigation
 
+class ZeroContainer: ContainerViewController {
+    
+}
+
 public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformView
 {
     let frame: CGRect
@@ -104,7 +108,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         return navigationMapView
     }
 
-    
     private func setupMapView()
     {
         navigationMapView = NavigationMapView(frame: frame)
@@ -112,9 +115,19 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         if(self.arguments != nil)
         {
-           
-            parseFlutterArguments(arguments: arguments)
-            
+            _language = arguments?["language"] as? String ?? _language
+            _voiceUnits = arguments?["units"] as? String ?? _voiceUnits
+            _simulateRoute = arguments?["simulateRoute"] as? Bool ?? _simulateRoute
+            _isOptimized = arguments?["isOptimized"] as? Bool ?? _isOptimized
+            _allowsUTurnAtWayPoints = arguments?["allowsUTurnAtWayPoints"] as? Bool
+            _navigationMode = arguments?["mode"] as? String ?? "drivingWithTraffic"
+            _mapStyleUrlDay = arguments?["mapStyleUrlDay"] as? String
+            _zoom = arguments?["zoom"] as? Double ?? _zoom
+            _bearing = arguments?["bearing"] as? Double ?? _bearing
+            _tilt = arguments?["tilt"] as? Double ?? _tilt
+            _animateBuildRoute = arguments?["animateBuildRoute"] as? Bool ?? _animateBuildRoute
+            _longPressDestinationEnabled = arguments?["longPressDestinationEnabled"] as? Bool ?? _longPressDestinationEnabled
+
             if(_mapStyleUrlDay != nil)
             {
                 navigationMapView.mapView.mapboxMap.style.uri = StyleURI.init(url: URL(string: _mapStyleUrlDay!)!)
@@ -154,10 +167,10 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         {
             return
         }
-        if (navigationService != nil) {
-            navigationService.stop()
-        }
-        navigationMapView.removeRoutes()
+
+        setupMapView()
+        self.view().setNeedsDisplay()
+
         routeResponse = nil
         sendEvent(eventType: MapBoxEventType.navigation_cancelled)
     }
@@ -198,12 +211,20 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             _wayPoints.append(location)
         }
 
-        parseFlutterArguments(arguments: arguments)
-        
+        _language = arguments?["language"] as? String ?? _language
+        _voiceUnits = arguments?["units"] as? String ?? _voiceUnits
+        _simulateRoute = arguments?["simulateRoute"] as? Bool ?? _simulateRoute
+        _isOptimized = arguments?["isOptimized"] as? Bool ?? _isOptimized
+        _allowsUTurnAtWayPoints = arguments?["allowsUTurnAtWayPoints"] as? Bool
+        _navigationMode = arguments?["mode"] as? String ?? "drivingWithTraffic"
+        _showReportFeedbackButton = arguments?["showReportFeedbackButton"] as? Bool ?? _showReportFeedbackButton
+        _showEndOfRouteFeedback = arguments?["showEndOfRouteFeedback"] as? Bool ?? _showEndOfRouteFeedback
         if(_wayPoints.count > 3 && arguments?["mode"] == nil)
         {
             _navigationMode = "driving"
         }
+        _mapStyleUrlDay = arguments?["mapStyleUrlDay"] as? String
+        _mapStyleUrlNight = arguments?["mapStyleUrlNight"] as? String
 
         var mode: ProfileIdentifier = .automobileAvoidingTraffic
 
@@ -221,7 +242,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         }
 
         let routeOptions = NavigationRouteOptions(waypoints: _wayPoints, profileIdentifier: mode)
-
+        
         if (_allowsUTurnAtWayPoints != nil)
         {
             routeOptions.allowsUTurnAtWaypoint = _allowsUTurnAtWayPoints!
@@ -247,14 +268,14 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     }
 
     func startEmbeddedFreeDrive(arguments: NSDictionary?, result: @escaping FlutterResult) {
-
+        
         let locationProvider: LocationProvider = passiveLocationProvider
         navigationMapView.mapView.location.overrideLocationProvider(with: locationProvider)
         passiveLocationProvider.startUpdatingLocation()
-
+        
         navigationMapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         navigationMapView.userLocationStyle = .puck2D()
-
+       
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
         navigationViewportDataSource.followingMobileCamera.zoom = _zoom
@@ -265,7 +286,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     func startEmbeddedNavigation(arguments: NSDictionary?, result: @escaping FlutterResult) {
         guard let response = self.routeResponse else { return }
         let navLocationManager = self._simulateRoute ? SimulatedLocationManager(route: response.routes!.first!) : NavigationLocationManager()
-        navigationService = MapboxNavigationService(routeResponse: response,
+        navigationService = MapboxNavigationService(routeResponse: response,                                                    
                                                             routeIndex: selectedRouteIndex,
                                                             routeOptions: routeOptions!,
                                                             routingProvider: MapboxRoutingProvider(.hybrid),
@@ -273,7 +294,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                                                             locationSource: navLocationManager,
                                                     simulating: self._simulateRoute ? .always : .onPoorGPS)
         navigationService.delegate = self
-
+        
         var dayStyle = CustomDayStyle()
         if(_mapStyleUrlDay != nil){
             dayStyle = CustomDayStyle(url: _mapStyleUrlDay)
@@ -283,7 +304,11 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
         }
         let navigationOptions = NavigationOptions(styles: [dayStyle, nightStyle], navigationService: navigationService)
-
+        navigationOptions.bottomBanner = ZeroContainer()
+        navigationOptions.topBanner = ZeroContainer()
+        navigationOptions.bottomBanner?.view.isHidden = true
+        navigationOptions.topBanner?.view.isHidden = true
+        navigationOptions.navigationMapView?.delegate = nil
         // Remove previous navigation view and controller if any
         if(_navigationViewController?.view != nil){
             _navigationViewController!.view.removeFromSuperview()
@@ -292,10 +317,18 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         _navigationViewController = NavigationViewController(for: response, routeIndex: selectedRouteIndex, routeOptions: routeOptions!, navigationOptions: navigationOptions)
         _navigationViewController!.delegate = self
+        
+        _navigationViewController!.showsReportFeedback = false
+        _navigationViewController!.showsEndOfRouteFeedback = false
 
-        _navigationViewController!.showsReportFeedback = _showReportFeedbackButton
-        _navigationViewController!.showsEndOfRouteFeedback = _showEndOfRouteFeedback
-
+        _navigationViewController!.showsSpeedLimits = false
+        _navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
+        _navigationViewController?.navigationView.topBannerContainerView.isHidden = true
+        _navigationViewController?.voiceController.speechSynthesizer.muted = true
+        _navigationViewController?.navigationView.floatingStackView.isHidden = true
+        _navigationViewController?.navigationView.wayNameView.isHidden = true
+        _navigationViewController?.navigationView.speedLimitView.isHidden = true
+        
         let flutterViewController = UIApplication.shared.delegate?.window?!.rootViewController as! FlutterViewController
         flutterViewController.addChild(_navigationViewController!)
 
@@ -432,7 +465,7 @@ extension FlutterMapboxNavigationView : UIGestureRecognizerDelegate {
         let destinationWaypoint = Waypoint(coordinate: destination)
 
         let routeOptions = NavigationRouteOptions(waypoints: [userWaypoint, destinationWaypoint])
-
+        
         Directions.shared.calculate(routeOptions) { [weak self] (session, result) in
 
             if let strongSelf = self {
