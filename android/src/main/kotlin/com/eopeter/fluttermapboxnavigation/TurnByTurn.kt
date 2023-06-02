@@ -64,7 +64,7 @@ open class TurnByTurn(
 
         // initialize navigation trip observers
         this.registerObservers()
-        this.binding.navigationView.customizeViewOptions {
+        /*this.binding.navigationView.customizeViewOptions {
             showTripProgress = false
             showSpeedLimit = false
             bannerInstructionsEnabled = false
@@ -84,7 +84,7 @@ open class TurnByTurn(
             showToggleAudioActionButton = false
             isInfoPanelHideable = true
             infoPanelForcedState = BottomSheetBehavior.STATE_HIDDEN
-        }
+        }*/
     }
 
     override fun onMethodCall(methodCall: MethodCall, result: MethodChannel.Result) {
