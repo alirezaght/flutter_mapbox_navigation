@@ -1,4 +1,4 @@
-package com.eopeter.flutter_mapbox_navigation
+package com.eopeter.fluttermapboxnavigation
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -10,11 +10,11 @@ import android.os.Bundle
 import android.transition.Scene
 import android.util.DisplayMetrics
 import androidx.lifecycle.LifecycleOwner
-import com.eopeter.flutter_mapbox_navigation.models.MapBoxEvents
-import com.eopeter.flutter_mapbox_navigation.models.MapBoxRouteProgressEvent
-import com.eopeter.flutter_mapbox_navigation.models.Waypoint
-import com.eopeter.flutter_mapbox_navigation.models.WaypointSet
-import com.eopeter.flutter_mapbox_navigation.utilities.PluginUtilities
+import com.eopeter.fluttermapboxnavigation.models.MapBoxEvents
+import com.eopeter.fluttermapboxnavigation.models.MapBoxRouteProgressEvent
+import com.eopeter.fluttermapboxnavigation.models.Waypoint
+import com.eopeter.fluttermapboxnavigation.models.WaypointSet
+import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities
 import com.google.gson.Gson
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -31,7 +31,7 @@ import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
-import eopeter.flutter_mapbox_navigation.databinding.NavigationActivityBinding
+import eopeter.fluttermapboxnavigation.databinding.NavigationActivityBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -48,7 +48,7 @@ import com.mapbox.navigation.ui.base.lifecycle.UIComponent
 import com.mapbox.navigation.ui.base.view.MapboxExtendableButton
 import com.mapbox.navigation.dropin.R
 import androidx.core.view.setPadding
-import com.eopeter.flutter_mapbox_navigation.utilities.CustomInfoPanelEndNavButtonBinder
+import com.eopeter.fluttermapboxnavigation.utilities.CustomInfoPanelEndNavButtonBinder
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.navigation.dropin.ViewStyleCustomization
 import com.mapbox.navigation.dropin.internal.extensions.updateMargins
