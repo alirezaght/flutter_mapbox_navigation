@@ -304,11 +304,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
         }
         let navigationOptions = NavigationOptions(styles: [dayStyle, nightStyle], navigationService: navigationService)
-        navigationOptions.bottomBanner = ZeroContainer()
-        navigationOptions.topBanner = ZeroContainer()
-        navigationOptions.bottomBanner?.view.isHidden = true
-        navigationOptions.topBanner?.view.isHidden = true
-        navigationOptions.navigationMapView?.delegate = nil
         // Remove previous navigation view and controller if any
         if(_navigationViewController?.view != nil){
             _navigationViewController!.view.removeFromSuperview()
@@ -317,17 +312,25 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         _navigationViewController = NavigationViewController(for: response, routeIndex: selectedRouteIndex, routeOptions: routeOptions!, navigationOptions: navigationOptions)
         _navigationViewController!.delegate = self
+
         
         _navigationViewController!.showsReportFeedback = false
         _navigationViewController!.showsEndOfRouteFeedback = false
 
-        _navigationViewController!.showsSpeedLimits = false
-        _navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
-        _navigationViewController?.navigationView.topBannerContainerView.isHidden = true
-        _navigationViewController?.voiceController.speechSynthesizer.muted = true
-        _navigationViewController?.navigationView.floatingStackView.isHidden = true
-        _navigationViewController?.navigationView.wayNameView.isHidden = true
-        _navigationViewController?.navigationView.speedLimitView.isHidden = true
+        
+        //navigationOptions.bottomBanner = ZeroContainer()
+        //navigationOptions.topBanner = ZeroContainer()
+        //navigationOptions.bottomBanner?.view.isHidden = true
+        //navigationOptions.topBanner?.view.isHidden = true
+        //navigationOptions.navigationMapView?.delegate = nil
+
+        //_navigationViewController!.showsSpeedLimits = false
+        //_navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
+        //_navigationViewController?.navigationView.topBannerContainerView.isHidden = true
+        //_navigationViewController?.voiceController.speechSynthesizer.muted = true
+        //_navigationViewController?.navigationView.floatingStackView.isHidden = true
+        //_navigationViewController?.navigationView.wayNameView.isHidden = true
+        //_navigationViewController?.navigationView.speedLimitView.isHidden = true
         
         let flutterViewController = UIApplication.shared.delegate?.window?!.rootViewController as! FlutterViewController
         flutterViewController.addChild(_navigationViewController!)
