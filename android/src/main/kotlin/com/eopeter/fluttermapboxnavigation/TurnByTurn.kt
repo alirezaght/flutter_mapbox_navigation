@@ -36,6 +36,7 @@ import com.mapbox.navigation.core.trip.session.RouteProgressObserver
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.util.*
 
 open class TurnByTurn(
