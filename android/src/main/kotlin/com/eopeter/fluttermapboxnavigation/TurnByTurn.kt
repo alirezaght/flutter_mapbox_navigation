@@ -37,6 +37,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.mapbox.maps.extension.style.style
 import java.util.*
 
 open class TurnByTurn(
@@ -57,14 +58,19 @@ open class TurnByTurn(
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
             .build()
-
         MapboxNavigationApp
             .setup(navigationOptions)
             .attach(this.activity as LifecycleOwner)
 
         // initialize navigation trip observers
         this.registerObservers()
-        /*this.binding.navigationView.customizeViewOptions {
+
+        this.binding.navigationView.customizeViewOptions {
+            mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1"
+            mapStyleUrlNight = "mapbox://styles/mapbox/navigation-night-v1"
+            mapStyleUriDay = "mapbox://styles/mapbox/navigation-night-v1"
+            mapStyleUriNight = "mapbox://styles/mapbox/navigation-night-v1"
+
             showTripProgress = false
             showSpeedLimit = false
             bannerInstructionsEnabled = false
@@ -84,7 +90,7 @@ open class TurnByTurn(
             showToggleAudioActionButton = false
             isInfoPanelHideable = true
             infoPanelForcedState = BottomSheetBehavior.STATE_HIDDEN
-        }*/
+        }
     }
 
     override fun onMethodCall(methodCall: MethodCall, result: MethodChannel.Result) {
@@ -188,6 +194,7 @@ open class TurnByTurn(
                 }
             }
         )
+
     }
 
     private fun clearRoute(methodCall: MethodCall, result: MethodChannel.Result) {
