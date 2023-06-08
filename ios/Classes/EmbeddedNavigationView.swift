@@ -37,7 +37,8 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         self.frame = frame
         self.viewId = viewId
         self.arguments = args as! NSDictionary?
-
+        UIButton.appearance(whenContainedInInstancesOf: [NavigationViewController.self]).alpha = 0
+        UIButton.appearance(whenContainedInInstancesOf: [NavigationMapView.self]).alpha = 0
         self.messenger = messenger
         self.channel = FlutterMethodChannel(name: "flutter_mapbox_navigation/\(viewId)", binaryMessenger: messenger)
         self.eventChannel = FlutterEventChannel(name: "flutter_mapbox_navigation/\(viewId)/events", binaryMessenger: messenger)
@@ -111,6 +112,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     private func setupMapView()
     {
         navigationMapView = NavigationMapView(frame: frame)
+        
         navigationMapView.delegate = self
 
         if(self.arguments != nil)
@@ -292,18 +294,18 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                                                             routingProvider: MapboxRoutingProvider(.hybrid),
                                                             credentials: NavigationSettings.shared.directions.credentials,
                                                             locationSource: navLocationManager,
-                                                    simulating: self._simulateRoute ? .always : .onPoorGPS)
+                                                    simulating: .never)
         navigationService.delegate = self
         
-        var dayStyle = CustomDayStyle()
-        if(_mapStyleUrlDay != nil){
-            dayStyle = CustomDayStyle(url: _mapStyleUrlDay)
-        }
-        let nightStyle = CustomNightStyle()
-        if(_mapStyleUrlNight != nil){
-            nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
-        }
-        let navigationOptions = NavigationOptions(styles: [dayStyle, nightStyle], navigationService: navigationService)
+//        var dayStyle = CustomNightStyle()
+//        if(_mapStyleUrlDay != nil){
+//            dayStyle = CustomNightStyle(url: _mapStyleUrlDay)
+//        }
+        let nightStyle = NightStyle()
+//        if(_mapStyleUrlNight != nil){
+//            nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
+//        }
+        let navigationOptions = NavigationOptions(styles: [nightStyle], navigationService: navigationService)
         // Remove previous navigation view and controller if any
         if(_navigationViewController?.view != nil){
             _navigationViewController!.view.removeFromSuperview()
@@ -318,24 +320,29 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         _navigationViewController!.showsEndOfRouteFeedback = false
 
         
-        //navigationOptions.bottomBanner = ZeroContainer()
-        //navigationOptions.topBanner = ZeroContainer()
-        //navigationOptions.bottomBanner?.view.isHidden = true
-        //navigationOptions.topBanner?.view.isHidden = true
-        //navigationOptions.navigationMapView?.delegate = nil
-
-        //_navigationViewController!.showsSpeedLimits = false
-        //_navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
-        //_navigationViewController?.navigationView.topBannerContainerView.isHidden = true
-        //_navigationViewController?.voiceController.speechSynthesizer.muted = true
-        //_navigationViewController?.navigationView.floatingStackView.isHidden = true
-        //_navigationViewController?.navigationView.wayNameView.isHidden = true
-        //_navigationViewController?.navigationView.speedLimitView.isHidden = true
+        navigationOptions.bottomBanner = ZeroContainer()
+        navigationOptions.topBanner = ZeroContainer()
+        navigationOptions.bottomBanner?.view.isHidden = true
+        navigationOptions.topBanner?.view.isHidden = true
         
+        navigationOptions.navigationMapView?.delegate = nil
+        
+        _navigationViewController!.showsSpeedLimits = false
+        _navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
+        _navigationViewController?.navigationView.topBannerContainerView.isHidden = true
+        _navigationViewController?.voiceController.speechSynthesizer.muted = false
+        _navigationViewController?.navigationView.floatingStackView.isHidden = true
+        _navigationViewController?.navigationView.wayNameView.isHidden = true
+        _navigationViewController?.navigationView.speedLimitView.isHidden = true
+        ResumeButton.appearance().alpha = 0
+        
+
+            
         let flutterViewController = UIApplication.shared.delegate?.window?!.rootViewController as! FlutterViewController
         flutterViewController.addChild(_navigationViewController!)
-
+            
         self.navigationMapView.addSubview(_navigationViewController!.view)
+        
         _navigationViewController!.view.translatesAutoresizingMaskIntoConstraints = false
         constraintsWithPaddingBetween(holderView: self.navigationMapView, topView: _navigationViewController!.view, padding: 0.0)
         flutterViewController.didMove(toParent: flutterViewController)
