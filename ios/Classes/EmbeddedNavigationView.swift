@@ -38,7 +38,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         self.viewId = viewId
         self.arguments = args as! NSDictionary?
         UIButton.appearance(whenContainedInInstancesOf: [NavigationViewController.self]).alpha = 0
-        UIButton.appearance(whenContainedInInstancesOf: [NavigationMapView.self]).alpha = 0
         self.messenger = messenger
         self.channel = FlutterMethodChannel(name: "flutter_mapbox_navigation/\(viewId)", binaryMessenger: messenger)
         self.eventChannel = FlutterEventChannel(name: "flutter_mapbox_navigation/\(viewId)/events", binaryMessenger: messenger)
