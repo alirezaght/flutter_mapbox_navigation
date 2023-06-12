@@ -74,7 +74,7 @@ open class TurnByTurn(
             showTripProgress = false
             showSpeedLimit = false
             bannerInstructionsEnabled = false
-            voiceInstructionsEnabled = false
+            voiceInstructionsEnabled = true
             showRoutePreviewButton = false
             showActionButtons = false
             showEndNavigationButton = false
