@@ -112,9 +112,10 @@ class MapBoxNavigationViewController {
   }
 
   /// Starts the Navigation
-  Future<bool?> startNavigation({MapBoxOptions? options}) async {
-    Map<String, dynamic>? args;
+  Future<bool?> startNavigation({MapBoxOptions? options, int primaryIndex = 0}) async {
+    Map<String, dynamic> args = {};
     if (options != null) args = options.toMap();
+    args["primaryIndex"] = primaryIndex;
     //_routeEventSubscription = _streamRouteEvent.listen(_onProgressData);
     return _methodChannel.invokeMethod('startNavigation', args);
   }
