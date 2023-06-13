@@ -38,6 +38,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.maps.extension.style.style
+import com.mapbox.navigation.ui.maps.camera.NavigationCamera
 import java.util.*
 
 open class TurnByTurn(
@@ -214,8 +215,8 @@ open class TurnByTurn(
             this.setOptions(arguments)
         }
 
-        this.startNavigation()
-
+        this.startNavigation(arguments?.get("primaryIndex") as Int)
+        
         if (this.currentRoutes != null) {
             result.success(true)
         } else {
@@ -234,12 +235,13 @@ open class TurnByTurn(
     }
 
     @SuppressLint("MissingPermission")
-    private fun startNavigation() {
+    private fun startNavigation(primaryIndex: Int) {
         if (this.currentRoutes == null) {
             PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
             return
         }
-        this.binding.navigationView.api.startActiveGuidance(this.currentRoutes!!)
+        var routes = currentRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
+        this.binding.navigationView.api.startActiveGuidance(routes)
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_RUNNING)
     }
 
