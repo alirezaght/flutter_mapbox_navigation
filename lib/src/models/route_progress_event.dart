@@ -23,10 +23,12 @@ class RouteProgressEvent {
     this.legIndex,
     this.stepIndex,
     this.isProgressEvent,
+    this.currentRouteIndex = 0,
   });
 
   RouteProgressEvent.fromJson(Map<String, dynamic> json) {
     isProgressEvent = json['arrived'] != null;
+    currentRouteIndex = json["currentRouteIndex"] ?? 0;
     arrived = json['arrived'] == null ? false : json['arrived'] as bool?;
     distance = isNullOrZero(json['distance'] as num?)
         ? 0.0
@@ -76,4 +78,5 @@ class RouteProgressEvent {
   int? legIndex;
   int? stepIndex;
   bool? isProgressEvent;
+  int currentRouteIndex = 0;
 }
