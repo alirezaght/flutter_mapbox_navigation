@@ -7,6 +7,7 @@ import com.mapbox.navigation.base.trip.model.RouteProgress
 class MapBoxRouteProgressEvent(progress: RouteProgress) {
 
     var arrived: Boolean? = null
+    private var currentRouteIndex: Int = 0
     private var distance: Float? = null
     private var duration: Double? = null
     private var distanceTraveled: Float? = null
@@ -33,6 +34,7 @@ class MapBoxRouteProgressEvent(progress: RouteProgress) {
         currentStepInstruction = progress.bannerInstructions?.primary()?.text()
         currentLegDistanceTraveled = progress.currentLegProgress?.distanceTraveled
         currentLegDistanceRemaining = progress.currentLegProgress?.distanceRemaining
+        currentRouteIndex = progress.navigationRoute.routeIndex;
     }
 
     fun toJson(): String {
@@ -48,6 +50,7 @@ class MapBoxRouteProgressEvent(progress: RouteProgress) {
         addProperty(json, "currentLegDistanceRemaining", currentLegDistanceRemaining)
         addProperty(json, "currentLegDistanceTraveled", currentLegDistanceTraveled)
         addProperty(json, "currentStepInstruction", currentStepInstruction)
+        addProperty(json, "currentRouteIndex", currentRouteIndex)
 
         if (currentLeg != null) {
             json.add("currentLeg", currentLeg!!.toJsonObject())
