@@ -22,7 +22,13 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     var arguments: NSDictionary?
 
     var routeResponse: RouteResponse?
-    var selectedRouteIndex = 0
+    var selectedRouteIndex = 0 {
+        didSet {
+            if (oldValue != selectedRouteIndex) {
+                sendEvent(eventType: MapBoxEventType.route_change, data: String(selectedRouteIndex))
+            }
+        }
+    }
     var routeOptions: NavigationRouteOptions?
     var navigationService: NavigationService!
 
@@ -287,6 +293,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     func startEmbeddedNavigation(arguments: NSDictionary?, result: @escaping FlutterResult) {
         guard let response = self.routeResponse else { return }
         let navLocationManager = self._simulateRoute ? SimulatedLocationManager(route: response.routes!.first!) : NavigationLocationManager()
+        self.selectedRouteIndex = arguments?["primaryIndex"] as? Int ?? 0
         navigationService = MapboxNavigationService(routeResponse: response,                                                    
                                                             routeIndex: selectedRouteIndex,
                                                             routeOptions: routeOptions!,
@@ -416,6 +423,7 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
             let jsonEncoder = JSONEncoder()
 
             let progressEvent = MapBoxRouteProgressEvent(progress: progress)
+            progressEvent.currentRouteIndex = self.selectedRouteIndex
             let progressEventJsonData = try! jsonEncoder.encode(progressEvent)
             let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii)
 
@@ -492,6 +500,7 @@ extension FlutterMapboxNavigationView : UIGestureRecognizerDelegate {
                     strongSelf.sendEvent(eventType: MapBoxEventType.route_built, data: strongSelf.encodeRouteResponse(response: response))
                     strongSelf.routeOptions = routeOptions
                     strongSelf._routes = routes
+                    strongSelf.selectedRouteIndex = 0
                     strongSelf.navigationMapView.show(routes)
                     strongSelf.navigationMapView.showWaypoints(on: route)
                 }
