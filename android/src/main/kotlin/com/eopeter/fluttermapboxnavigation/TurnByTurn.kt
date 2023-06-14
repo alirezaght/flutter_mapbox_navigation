@@ -37,8 +37,31 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.gson.JsonObject
 import com.mapbox.maps.extension.style.style
+import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.navigation.base.ExperimentalPreviewMapboxNavigationAPI
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.directions.session.RoutesObserver
+import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
+import com.mapbox.navigation.core.preview.RoutesPreviewObserver
+import com.mapbox.navigation.core.routerefresh.RouteRefreshStatesObserver
+import com.mapbox.navigation.dropin.NavigationView
+import com.mapbox.navigation.dropin.map.MapViewBinder
+import com.mapbox.navigation.ui.app.internal.Action
+import com.mapbox.navigation.ui.app.internal.Middleware
+import com.mapbox.navigation.ui.app.internal.SharedApp
+import com.mapbox.navigation.ui.app.internal.State
+import com.mapbox.navigation.ui.app.internal.location.LocationAction
+import com.mapbox.navigation.ui.app.internal.routefetch.RoutePreviewAction
+import com.mapbox.navigation.ui.app.internal.routefetch.RoutePreviewState
+import com.mapbox.navigation.ui.base.lifecycle.UIBinder
+import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
+import com.mapbox.navigation.ui.maps.building.view.MapboxBuildingView
 import com.mapbox.navigation.ui.maps.camera.NavigationCamera
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
 import java.util.*
 
 open class TurnByTurn(
@@ -66,6 +89,26 @@ open class TurnByTurn(
         // initialize navigation trip observers
         this.registerObservers()
 
+
+        this@TurnByTurn.binding.navigationView.customizeViewBinders {
+            this.mapViewBinder = MapViewBinder.defaultBinder()
+            mapViewBinder!!.getMapView(context).getMapboxMap().addOnMapClickListener(
+                OnMapClickListener { point ->
+                    MapboxRouteLineApi(
+                        MapboxRouteLineOptions.Builder(context).build()
+                    ).findClosestRoute(
+                        point,
+                        mapViewBinder!!.getMapView(context).getMapboxMap(),
+                        5f,
+                        MapboxNavigationConsumer { value ->
+                            this@TurnByTurn.selectedIndex =
+                                value.value?.navigationRoute?.routeIndex ?: 0
+                        })
+                    true
+                })
+            this.infoPanelEndNavigationButtonBinder =
+                CustomInfoPanelEndNavButtonBinder(MapboxNavigationApp.current()!!)
+        }
         this.binding.navigationView.customizeViewOptions {
             mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1"
             mapStyleUrlNight = "mapbox://styles/mapbox/navigation-night-v1"
@@ -99,32 +142,41 @@ open class TurnByTurn(
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
+
             "enableOfflineRouting" -> {
                 // downloadRegionForOfflineRouting(call, result)
             }
+
             "buildRoute" -> {
                 this.buildRoute(methodCall, result)
             }
+
             "clearRoute" -> {
                 this.clearRoute(methodCall, result)
             }
+
             "startFreeDrive" -> {
                 FlutterMapboxNavigationPlugin.enableFreeDriveMode = true
                 this.startFreeDrive()
             }
+
             "startNavigation" -> {
                 FlutterMapboxNavigationPlugin.enableFreeDriveMode = false
                 this.startNavigation(methodCall, result)
             }
+
             "finishNavigation" -> {
                 this.finishNavigation(methodCall, result)
             }
+
             "getDistanceRemaining" -> {
                 result.success(this.distanceRemaining)
             }
+
             "getDurationRemaining" -> {
                 result.success(this.durationRemaining)
             }
+
             else -> result.notImplemented()
         }
     }
@@ -143,9 +195,10 @@ open class TurnByTurn(
             this.addedWaypoints.add(Waypoint(Point.fromLngLat(longitude, latitude)))
         }
         this.getRoute(this.context, result)
-        
+
     }
 
+    @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     private fun getRoute(context: Context, result: MethodChannel.Result) {
         MapboxNavigationApp.current()!!.requestRoutes(
             routeOptions = RouteOptions
@@ -171,11 +224,11 @@ open class TurnByTurn(
                     this@TurnByTurn.binding.navigationView.api.routeReplayEnabled(
                         this@TurnByTurn.simulateRoute
                     )
+
+//                    MapboxNavigationApp.current()!!.moveRoutesFromPreviewToNavigator();
                     this@TurnByTurn.binding.navigationView.api.startRoutePreview(routes)
-                    this@TurnByTurn.binding.navigationView.customizeViewBinders {
-                        this.infoPanelEndNavigationButtonBinder =
-                            CustomInfoPanelEndNavButtonBinder(MapboxNavigationApp.current()!!)
-                    }
+
+
                 }
 
                 override fun onFailure(
@@ -216,7 +269,7 @@ open class TurnByTurn(
         }
 
         this.startNavigation(arguments?.get("primaryIndex") as Int)
-        
+
         if (this.currentRoutes != null) {
             result.success(true)
         } else {
@@ -240,7 +293,8 @@ open class TurnByTurn(
             PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
             return
         }
-        var routes = currentRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
+        var routes =
+            currentRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
         this.binding.navigationView.api.startActiveGuidance(routes)
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_RUNNING)
     }
@@ -333,15 +387,19 @@ open class TurnByTurn(
         }
     }
 
+    @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     open fun registerObservers() {
         // register event listeners
+        SharedApp.store.registerMiddleware(middlewares = arrayOf(this.middleWare))
         MapboxNavigationApp.current()?.registerLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.registerRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.registerArrivalObserver(this.arrivalObserver)
     }
 
+    @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     open fun unregisterObservers() {
         // unregister event listeners to prevent leaks or unnecessary resource consumption
+        SharedApp.store.unregisterMiddleware(middlewares = arrayOf(this.middleWare))
         MapboxNavigationApp.current()?.unregisterLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.unregisterRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.unregisterArrivalObserver(this.arrivalObserver)
@@ -356,6 +414,7 @@ open class TurnByTurn(
         FlutterMapboxNavigationPlugin.eventSink = null
     }
 
+    private var selectedIndex: Int = 0
     private val context: Context = ctx
     val activity: Activity = act
     private val token: String = accessToken
@@ -419,6 +478,33 @@ open class TurnByTurn(
         }
     }
 
+    private val middleWare = object : Middleware {
+        override fun onDispatch(state: State, action: Action): Boolean {
+            var routes = (state.previewRoutes as? RoutePreviewState.Ready)?.routes
+            if (routes?.isNotEmpty() == true) {
+                var routeIndex = routes.first().routeIndex
+                if (routeIndex != this@TurnByTurn.selectedIndex) {
+                    this@TurnByTurn.selectedIndex = routeIndex
+                    PluginUtilities.sendEvent(
+                        MapBoxEvents.ROUTE_CHANGE,
+                        routeIndex.toString()
+                    )
+                }
+                if (this@TurnByTurn.currentRoutes != null) {
+                    if (!routes.containsAll(this@TurnByTurn.currentRoutes!!)) {
+                        this@TurnByTurn.currentRoutes = routes
+                        PluginUtilities.sendEvent(
+                            MapBoxEvents.ROUTE_BUILT,
+                            Gson().toJson(routes.map { it.directionsRoute.toJson() })
+                        )
+                    }
+                }
+            }
+            return false
+        }
+    }
+
+
     /**
      * Gets notified with progress along the currently active route.
      */
@@ -479,4 +565,5 @@ open class TurnByTurn(
     override fun onActivityDestroyed(activity: Activity) {
         Log.d("Embedded", "onActivityDestroyed not implemented")
     }
+
 }
