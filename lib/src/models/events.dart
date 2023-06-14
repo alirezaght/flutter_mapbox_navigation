@@ -5,6 +5,7 @@ enum MapBoxEvent {
   map_ready,
   route_building,
   route_built,
+  route_change,
   route_build_failed,
   route_build_cancelled,
   route_build_no_routes_found,
