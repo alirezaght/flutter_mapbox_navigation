@@ -8,6 +8,7 @@ enum class MapBoxEvents(val value: String) {
     ROUTE_BUILD_CANCELLED("route_build_cancelled"),
     ROUTE_BUILD_NO_ROUTES_FOUND("route_build_no_routes_found"),
     PROGRESS_CHANGE("progress_change"),
+    ROUTE_CHANGE("route_change"),
     USER_OFF_ROUTE("user_off_route"),
     MILESTONE_EVENT("milestone_event"),
     NAVIGATION_RUNNING("navigation_running"),
