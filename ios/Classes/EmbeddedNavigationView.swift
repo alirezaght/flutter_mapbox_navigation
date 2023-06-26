@@ -17,6 +17,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     let messenger: FlutterBinaryMessenger
     let channel: FlutterMethodChannel
     let eventChannel: FlutterEventChannel
+    var mute = true
 
     var navigationMapView: NavigationMapView!
     var arguments: NSDictionary?
@@ -90,6 +91,11 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             {
                 strongSelf.startEmbeddedNavigation(arguments: arguments, result: result)
             }
+            else if(call.method == "muteToggle")
+            {
+                strongSelf.mute = !strongSelf.mute
+                strongSelf.applyMute()
+            }
             else if(call.method == "reCenter"){
                 //used to recenter map from user action during navigation
                 strongSelf.navigationMapView.navigationCamera.follow()
@@ -100,6 +106,10 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             }
 
         }
+    }
+    
+    func applyMute() {
+        _navigationViewController?.voiceController.speechSynthesizer.muted = self.mute
     }
 
     public func view() -> UIView
@@ -336,7 +346,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         _navigationViewController!.showsSpeedLimits = false
         _navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
         _navigationViewController?.navigationView.topBannerContainerView.isHidden = true
-        _navigationViewController?.voiceController.speechSynthesizer.muted = true
+        self.applyMute()
         _navigationViewController?.navigationView.floatingStackView.isHidden = true
         _navigationViewController?.navigationView.wayNameView.isHidden = true
         _navigationViewController?.navigationView.speedLimitView.isHidden = true
