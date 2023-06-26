@@ -38,15 +38,20 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.JsonObject
+import com.mapbox.api.directions.v5.models.VoiceInstructions
+import com.mapbox.api.speech.v1.MapboxSpeech
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.navigation.base.ExperimentalPreviewMapboxNavigationAPI
+import com.mapbox.navigation.base.trip.notification.TripNotificationInterceptor
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
+import com.mapbox.navigation.core.internal.extensions.flowVoiceInstructions
 import com.mapbox.navigation.core.preview.RoutesPreviewObserver
 import com.mapbox.navigation.core.routerefresh.RouteRefreshStatesObserver
+import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver
 import com.mapbox.navigation.dropin.NavigationView
 import com.mapbox.navigation.dropin.map.MapViewBinder
 import com.mapbox.navigation.ui.app.internal.Action
@@ -62,6 +67,11 @@ import com.mapbox.navigation.ui.maps.building.view.MapboxBuildingView
 import com.mapbox.navigation.ui.maps.camera.NavigationCamera
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
+import com.mapbox.navigation.ui.voice.api.MapboxAudioGuidance
+import com.mapbox.navigation.ui.voice.api.MapboxVoiceInstructionsPlayer
+import com.mapbox.navigation.ui.voice.internal.MapboxVoiceInstructions
+import com.mapbox.navigation.ui.voice.model.SpeechVolume
+import com.mapbox.navigation.ui.voice.options.VoiceInstructionsPlayerOptions
 import java.util.*
 
 open class TurnByTurn(
@@ -90,25 +100,7 @@ open class TurnByTurn(
         this.registerObservers()
 
 
-        this@TurnByTurn.binding.navigationView.customizeViewBinders {
-            this.mapViewBinder = MapViewBinder.defaultBinder()
-            mapViewBinder!!.getMapView(context).getMapboxMap().addOnMapClickListener(
-                OnMapClickListener { point ->
-                    MapboxRouteLineApi(
-                        MapboxRouteLineOptions.Builder(context).build()
-                    ).findClosestRoute(
-                        point,
-                        mapViewBinder!!.getMapView(context).getMapboxMap(),
-                        5f,
-                        MapboxNavigationConsumer { value ->
-                            this@TurnByTurn.selectedIndex =
-                                value.value?.navigationRoute?.routeIndex ?: 0
-                        })
-                    true
-                })
-            this.infoPanelEndNavigationButtonBinder =
-                CustomInfoPanelEndNavButtonBinder(MapboxNavigationApp.current()!!)
-        }
+
         this.binding.navigationView.customizeViewOptions {
             mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1"
             mapStyleUrlNight = "mapbox://styles/mapbox/navigation-night-v1"
@@ -177,7 +169,23 @@ open class TurnByTurn(
                 result.success(this.durationRemaining)
             }
 
+            "muteToggle" -> {
+                this@TurnByTurn.mute = !this@TurnByTurn.mute
+                applyMute()
+                result.success(true)
+            }
+
             else -> result.notImplemented()
+        }
+    }
+
+    private fun applyMute() {
+        if (this@TurnByTurn.mute) {
+            MapboxAudioGuidance.getRegisteredInstance().getCurrentVoiceInstructionsPlayer()!!
+                .volume(SpeechVolume(0f))
+        } else {
+            MapboxAudioGuidance.getRegisteredInstance().getCurrentVoiceInstructionsPlayer()!!
+                .volume(SpeechVolume(1f))
         }
     }
 
@@ -295,6 +303,7 @@ open class TurnByTurn(
         }
         var routes =
             currentRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
+        applyMute()
         this.binding.navigationView.api.startActiveGuidance(routes)
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_RUNNING)
     }
@@ -391,6 +400,7 @@ open class TurnByTurn(
     open fun registerObservers() {
         // register event listeners
         SharedApp.store.registerMiddleware(middlewares = arrayOf(this.middleWare))
+        MapboxNavigationApp.current()?.registerVoiceInstructionsObserver(this.voiceObserver)
         MapboxNavigationApp.current()?.registerLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.registerRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.registerArrivalObserver(this.arrivalObserver)
@@ -400,6 +410,7 @@ open class TurnByTurn(
     open fun unregisterObservers() {
         // unregister event listeners to prevent leaks or unnecessary resource consumption
         SharedApp.store.unregisterMiddleware(middlewares = arrayOf(this.middleWare))
+        MapboxNavigationApp.current()?.unregisterVoiceInstructionsObserver(this.voiceObserver)
         MapboxNavigationApp.current()?.unregisterLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.unregisterRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.unregisterArrivalObserver(this.arrivalObserver)
@@ -414,6 +425,7 @@ open class TurnByTurn(
         FlutterMapboxNavigationPlugin.eventSink = null
     }
 
+    private var mute = true
     private var selectedIndex: Int = 0
     private val context: Context = ctx
     val activity: Activity = act
@@ -478,6 +490,12 @@ open class TurnByTurn(
         }
     }
 
+    private val voiceObserver = object : VoiceInstructionsObserver {
+        override fun onNewVoiceInstructions(voiceInstructions: VoiceInstructions) {
+            voiceInstructions.toBuilder().announcement("").ssmlAnnouncement("").build()
+        }
+    }
+
     private val middleWare = object : Middleware {
         override fun onDispatch(state: State, action: Action): Boolean {
             var routes = (state.previewRoutes as? RoutePreviewState.Ready)?.routes
@@ -509,10 +527,10 @@ open class TurnByTurn(
      * Gets notified with progress along the currently active route.
      */
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+
         // update flutter events
         if (!this.isNavigationCanceled) {
             try {
-
                 this.distanceRemaining = routeProgress.distanceRemaining
                 this.durationRemaining = routeProgress.durationRemaining
 
