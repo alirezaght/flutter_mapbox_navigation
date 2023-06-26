@@ -336,7 +336,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         _navigationViewController!.showsSpeedLimits = false
         _navigationViewController?.navigationView.bottomBannerContainerView.isHidden = true
         _navigationViewController?.navigationView.topBannerContainerView.isHidden = true
-        _navigationViewController?.voiceController.speechSynthesizer.muted = false
+        _navigationViewController?.voiceController.speechSynthesizer.muted = true
         _navigationViewController?.navigationView.floatingStackView.isHidden = true
         _navigationViewController?.navigationView.wayNameView.isHidden = true
         _navigationViewController?.navigationView.speedLimitView.isHidden = true
