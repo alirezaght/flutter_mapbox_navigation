@@ -98,7 +98,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             }
             else if(call.method == "reCenter"){
                 //used to recenter map from user action during navigation
-                strongSelf.navigationMapView.navigationCamera.follow()
+                strongSelf._navigationViewController?.navigationMapView?.navigationCamera.follow()
             }
             else
             {
