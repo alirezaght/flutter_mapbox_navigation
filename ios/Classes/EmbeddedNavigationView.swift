@@ -17,7 +17,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     let messenger: FlutterBinaryMessenger
     let channel: FlutterMethodChannel
     let eventChannel: FlutterEventChannel
-    var mute = true
+    var mute = false
 
     var navigationMapView: NavigationMapView!
     var arguments: NSDictionary?
