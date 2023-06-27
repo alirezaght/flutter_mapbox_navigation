@@ -103,13 +103,13 @@ open class TurnByTurn(
 
         // initialize navigation trip observers
         this.registerObservers()
-        
+
 
         this.binding.navigationView.customizeViewOptions {
-            mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1"
-            mapStyleUrlNight = "mapbox://styles/mapbox/navigation-night-v1"
-            mapStyleUriDay = "mapbox://styles/mapbox/navigation-night-v1"
-            mapStyleUriNight = "mapbox://styles/mapbox/navigation-night-v1"
+            mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
+            mapStyleUrlNight = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
+            mapStyleUriDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
+            mapStyleUriNight = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
 
             showTripProgress = false
             showSpeedLimit = false
