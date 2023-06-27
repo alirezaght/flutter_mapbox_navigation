@@ -99,6 +99,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             else if(call.method == "reCenter"){
                 //used to recenter map from user action during navigation
                 strongSelf._navigationViewController?.navigationMapView?.navigationCamera.follow()
+//                strongSelf.navigationMapView.navigationCamera.follow()
             }
             else
             {
@@ -318,6 +319,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 //            dayStyle = CustomNightStyle(url: _mapStyleUrlDay)
 //        }
         let nightStyle = NightStyle()
+        nightStyle.mapStyleURL = URL(string: "mapbox://styles/mapbox/navigation-night-v1?optimize=true")!
 //        if(_mapStyleUrlNight != nil){
 //            nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
 //        }
