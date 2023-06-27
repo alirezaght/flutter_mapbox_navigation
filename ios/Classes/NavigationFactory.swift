@@ -261,21 +261,17 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
                 self._navigationViewController?.view.removeFromSuperview()
                 self._navigationViewController?.removeFromParent()
                 self._navigationViewController = nil
-                if(result != nil)
-                {
-                    result!(true)
-                }
             }
             else
             {
                 self._navigationViewController?.dismiss(animated: true, completion: {
                     self._navigationViewController = nil
-                    if(result != nil)
-                    {
-                        result!(true)
-                    }
                 })
             }
+        }
+        if(result != nil)
+        {
+            result!(true)
         }
         
     }
