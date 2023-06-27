@@ -252,6 +252,7 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
     func endNavigation(result: FlutterResult?)
     {
         sendEvent(eventType: MapBoxEventType.navigation_finished)
+        
         if(self._navigationViewController != nil)
         {
             self._navigationViewController?.navigationService.endNavigation(feedback: nil)
@@ -260,6 +261,10 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
                 self._navigationViewController?.view.removeFromSuperview()
                 self._navigationViewController?.removeFromParent()
                 self._navigationViewController = nil
+                if(result != nil)
+                {
+                    result!(true)
+                }
             }
             else
             {
