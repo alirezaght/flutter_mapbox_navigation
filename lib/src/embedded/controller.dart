@@ -120,6 +120,14 @@ class MapBoxNavigationViewController {
     return _methodChannel.invokeMethod('startNavigation', args);
   }
 
+  Future<void> muteToggle() async {
+    _methodChannel.invokeMethod('muteToggle', null);
+  }
+
+  Future<void> recenter() async {
+    _methodChannel.invokeMethod('reCenter', null);
+  }
+
   ///Ends Navigation and Closes the Navigation View
   Future<bool?> finishNavigation() async {
     final success = await _methodChannel.invokeMethod('finishNavigation', null);
