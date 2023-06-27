@@ -41,6 +41,7 @@ import com.google.gson.JsonObject
 import com.mapbox.api.directions.v5.models.VoiceInstructions
 import com.mapbox.api.speech.v1.MapboxSpeech
 import com.mapbox.maps.extension.style.style
+import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.navigation.base.ExperimentalPreviewMapboxNavigationAPI
@@ -58,6 +59,9 @@ import com.mapbox.navigation.ui.app.internal.Action
 import com.mapbox.navigation.ui.app.internal.Middleware
 import com.mapbox.navigation.ui.app.internal.SharedApp
 import com.mapbox.navigation.ui.app.internal.State
+import com.mapbox.navigation.ui.app.internal.camera.CameraAction
+import com.mapbox.navigation.ui.app.internal.camera.TargetCameraMode
+import com.mapbox.navigation.ui.app.internal.extension.ThunkAction
 import com.mapbox.navigation.ui.app.internal.location.LocationAction
 import com.mapbox.navigation.ui.app.internal.routefetch.RoutePreviewAction
 import com.mapbox.navigation.ui.app.internal.routefetch.RoutePreviewState
@@ -65,6 +69,7 @@ import com.mapbox.navigation.ui.base.lifecycle.UIBinder
 import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
 import com.mapbox.navigation.ui.maps.building.view.MapboxBuildingView
 import com.mapbox.navigation.ui.maps.camera.NavigationCamera
+import com.mapbox.navigation.ui.maps.camera.data.MapboxNavigationViewportDataSource
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
 import com.mapbox.navigation.ui.voice.api.MapboxAudioGuidance
@@ -98,8 +103,7 @@ open class TurnByTurn(
 
         // initialize navigation trip observers
         this.registerObservers()
-
-
+        
 
         this.binding.navigationView.customizeViewOptions {
             mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1"
@@ -175,17 +179,20 @@ open class TurnByTurn(
                 result.success(true)
             }
 
+            "reCenter" -> {
+                SharedApp.store.dispatch(CameraAction.SetCameraMode(TargetCameraMode.Following))
+                result.success(true)
+            }
+
             else -> result.notImplemented()
         }
     }
 
     private fun applyMute() {
         if (this@TurnByTurn.mute) {
-            MapboxAudioGuidance.getRegisteredInstance().getCurrentVoiceInstructionsPlayer()!!
-                .volume(SpeechVolume(0f))
+            MapboxAudioGuidance.getRegisteredInstance().mute()
         } else {
-            MapboxAudioGuidance.getRegisteredInstance().getCurrentVoiceInstructionsPlayer()!!
-                .volume(SpeechVolume(1f))
+            MapboxAudioGuidance.getRegisteredInstance().unmute()
         }
     }
 
