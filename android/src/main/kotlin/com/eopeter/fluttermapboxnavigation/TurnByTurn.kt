@@ -432,7 +432,7 @@ open class TurnByTurn(
         FlutterMapboxNavigationPlugin.eventSink = null
     }
 
-    private var mute = true
+    private var mute = false
     private var selectedIndex: Int = 0
     private val context: Context = ctx
     val activity: Activity = act
