@@ -81,8 +81,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             }
             else if(call.method == "finishNavigation")
             {
-                strongSelf.navigationService.endNavigation(feedback: nil)
-                strongSelf._navigationViewController?.navigationService.endNavigation(feedback: nil)
                 strongSelf.endNavigation(result: result)
             }
             else if(call.method == "startFreeDrive")
