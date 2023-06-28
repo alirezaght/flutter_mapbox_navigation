@@ -184,6 +184,11 @@ open class TurnByTurn(
                 result.success(true)
             }
 
+            "unregister" -> {
+                this.unregisterObservers()
+                result.success(true)
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -403,7 +408,6 @@ open class TurnByTurn(
         }
     }
 
-    @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     open fun registerObservers() {
         // register event listeners
         SharedApp.store.registerMiddleware(middlewares = arrayOf(this.middleWare))
@@ -413,7 +417,6 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.registerArrivalObserver(this.arrivalObserver)
     }
 
-    @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     open fun unregisterObservers() {
         // unregister event listeners to prevent leaks or unnecessary resource consumption
         SharedApp.store.unregisterMiddleware(middlewares = arrayOf(this.middleWare))
