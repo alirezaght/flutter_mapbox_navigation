@@ -128,6 +128,12 @@ class MapBoxNavigationViewController {
     _methodChannel.invokeMethod('reCenter', null);
   }
 
+  Future<void> unregister() async {
+    if (Platform.isAndroid) {
+      _methodChannel.invokeMethod('unregister', null);
+    }
+  }
+
   ///Ends Navigation and Closes the Navigation View
   Future<bool?> finishNavigation() async {
     final success = await _methodChannel.invokeMethod('finishNavigation', null);
