@@ -220,7 +220,7 @@ open class TurnByTurn(
 
     @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     private fun getRoute(context: Context, result: MethodChannel.Result) {
-        MapboxNavigationApp.current()!!.requestRoutes(
+        this.requestId = MapboxNavigationApp.current()!!.requestRoutes(
             routeOptions = RouteOptions
                 .builder()
                 .applyDefaultNavigationOptions()
@@ -321,6 +321,7 @@ open class TurnByTurn(
     }
 
     private fun finishNavigation(isOffRouted: Boolean = false) {
+        this.unregisterObservers()
         MapboxNavigationApp.current()!!.stopTripSession()
         this.isNavigationCanceled = true
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
@@ -424,6 +425,8 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.unregisterLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.unregisterRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.unregisterArrivalObserver(this.arrivalObserver)
+        if (this.requestId != null)
+            MapboxNavigationApp.current()?.cancelRouteRequest(this.requestId!!)
     }
 
     // Flutter stream listener delegate methods
@@ -435,6 +438,7 @@ open class TurnByTurn(
         FlutterMapboxNavigationPlugin.eventSink = null
     }
 
+    private var requestId: Long? = null
     private var mute = false
     private var selectedIndex: Int = 0
     private val context: Context = ctx
