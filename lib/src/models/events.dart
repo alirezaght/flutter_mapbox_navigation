@@ -20,5 +20,6 @@ enum MapBoxEvent {
   banner_instruction,
   on_arrival,
   failed_to_reroute,
-  reroute_along
+  reroute_along,
+  route_alternate_built
 }
