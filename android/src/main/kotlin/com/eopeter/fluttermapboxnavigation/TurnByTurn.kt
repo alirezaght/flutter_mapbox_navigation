@@ -51,6 +51,8 @@ import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
 import com.mapbox.navigation.core.internal.extensions.flowVoiceInstructions
 import com.mapbox.navigation.core.preview.RoutesPreviewObserver
+import com.mapbox.navigation.core.routealternatives.NavigationRouteAlternativesObserver
+import com.mapbox.navigation.core.routealternatives.RouteAlternativesError
 import com.mapbox.navigation.core.routerefresh.RouteRefreshStatesObserver
 import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver
 import com.mapbox.navigation.dropin.NavigationView
@@ -161,6 +163,16 @@ open class TurnByTurn(
                 this.startNavigation(methodCall, result)
             }
 
+            "setAlternate" -> {
+                val arguments = methodCall.arguments as? Map<*, *>
+                val primaryIndex = arguments?.get("primaryIndex") as Int
+                var routes =
+                    alternateRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
+                MapboxNavigationApp.current()!!.setNavigationRoutes(routes)
+                result.success(true)
+                this.selectedIndex = primaryIndex
+            }
+
             "finishNavigation" -> {
                 this.finishNavigation(methodCall, result)
             }
@@ -228,7 +240,7 @@ open class TurnByTurn(
                 .coordinatesList(this.addedWaypoints.coordinatesList())
                 .waypointIndicesList(this.addedWaypoints.waypointsIndices())
                 .waypointNamesList(this.addedWaypoints.waypointsNames())
-                .alternatives(true)
+                .alternatives(false)
                 .build(),
             callback = object : NavigationRouterCallback {
                 override fun onRoutesReady(
@@ -416,6 +428,7 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.registerLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.registerRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.registerArrivalObserver(this.arrivalObserver)
+        MapboxNavigationApp.current()?.registerRouteAlternativesObserver(this.alternativeRoutesObserver)
     }
 
     open fun unregisterObservers() {
@@ -425,6 +438,7 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.unregisterLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.unregisterRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.unregisterArrivalObserver(this.arrivalObserver)
+        MapboxNavigationApp.current()?.unregisterRouteAlternativesObserver(this.alternativeRoutesObserver)
         if (this.requestId != null)
             MapboxNavigationApp.current()?.cancelRouteRequest(this.requestId!!)
     }
@@ -481,6 +495,7 @@ open class TurnByTurn(
     private var isOptimized = false
 
     private var currentRoutes: List<NavigationRoute>? = null
+    private var alternateRoutes: List<NavigationRoute>? = null
     private var isNavigationCanceled = false
 
     /**
@@ -554,6 +569,24 @@ open class TurnByTurn(
                 // handle this error
             }
         }
+    }
+
+    private val alternativeRoutesObserver: NavigationRouteAlternativesObserver = object: NavigationRouteAlternativesObserver {
+        override fun onRouteAlternatives(
+            routeProgress: RouteProgress,
+            alternatives: List<NavigationRoute>,
+            routerOrigin: RouterOrigin
+        ) {
+            this@TurnByTurn.alternateRoutes = alternatives
+            PluginUtilities.sendEvent(
+                MapBoxEvents.ROUTE_ALTERNATE_BUILT,
+                Gson().toJson(alternatives.map { it.directionsRoute.toJson() })
+            )
+        }
+
+        override fun onRouteAlternativesError(error: RouteAlternativesError) {
+        }
+
     }
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
