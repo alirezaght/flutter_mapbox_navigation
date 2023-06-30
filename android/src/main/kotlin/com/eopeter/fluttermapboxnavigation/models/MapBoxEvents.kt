@@ -4,6 +4,7 @@ enum class MapBoxEvents(val value: String) {
     MAP_READY("map_ready"),
     ROUTE_BUILDING("route_building"),
     ROUTE_BUILT("route_built"),
+    ROUTE_ALTERNATE_BUILT("route_alternate_built"),
     ROUTE_BUILD_FAILED("route_build_failed"),
     ROUTE_BUILD_CANCELLED("route_build_cancelled"),
     ROUTE_BUILD_NO_ROUTES_FOUND("route_build_no_routes_found"),
