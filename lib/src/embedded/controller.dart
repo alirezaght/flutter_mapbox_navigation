@@ -120,6 +120,13 @@ class MapBoxNavigationViewController {
     return _methodChannel.invokeMethod('startNavigation', args);
   }
 
+  Future<bool?> setAlternate({int primaryIndex = 0}) async {
+    Map<String, dynamic> args = {};
+    args["primaryIndex"] = primaryIndex;
+    //_routeEventSubscription = _streamRouteEvent.listen(_onProgressData);
+    return _methodChannel.invokeMethod('setAlternate', args);
+  }
+
   Future<void> muteToggle() async {
     _methodChannel.invokeMethod('muteToggle', null);
   }
