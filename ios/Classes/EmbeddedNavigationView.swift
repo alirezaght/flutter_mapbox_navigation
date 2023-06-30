@@ -19,6 +19,8 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     let eventChannel: FlutterEventChannel
     var mute = false
 
+    var alternativeRoutes: [Int: IndexedRouteResponse] = [:]
+    
     var navigationMapView: NavigationMapView!
     var arguments: NSDictionary?
 
@@ -90,6 +92,14 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             else if(call.method == "startNavigation")
             {
                 strongSelf.startEmbeddedNavigation(arguments: arguments, result: result)
+            }
+            else if(call.method == "setAlternate")
+            {
+                var index = arguments?["primaryIndex"] as? Int ?? 0
+                strongSelf.navigationService.router.updateRoute(with: strongSelf.alternativeRoutes[index]!, routeOptions: strongSelf.routeOptions!, completion: nil)
+                result(true)
+                strongSelf.selectedRouteIndex = index
+                
             }
             else if(call.method == "muteToggle")
             {
@@ -446,6 +456,18 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
                 _eventSink = nil
             }
         }
+    }
+    
+    public func navigationService(_ service: NavigationService, didUpdateAlternatives updatedAlternatives: [AlternativeRoute], removedAlternatives: [AlternativeRoute]) {
+        var routes: [Route] = []
+        self.alternativeRoutes = [:]
+        updatedAlternatives.forEach { route in
+            if (route.indexedRouteResponse.routeResponse.routes != nil) {
+                routes.append(contentsOf: route.indexedRouteResponse.routeResponse.routes!)
+                self.alternativeRoutes[route.indexedRouteResponse.routeIndex] = route.indexedRouteResponse
+            }
+        }
+        self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
     }
 }
 
