@@ -371,6 +371,16 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
         return "{}"
     }
     
+    func encodeRouteResponse(routes: [MapboxDirections.Route]?) -> String {
+        if routes != nil && !routes!.isEmpty {
+            let jsonEncoder = JSONEncoder()
+            let jsonData = try! jsonEncoder.encode(routes!)
+            return String(data: jsonData, encoding: String.Encoding.utf8) ?? "{}"
+        }
+        
+        return "{}"
+    }
+    
     //MARK: EventListener Delegates
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         _eventSink = events
