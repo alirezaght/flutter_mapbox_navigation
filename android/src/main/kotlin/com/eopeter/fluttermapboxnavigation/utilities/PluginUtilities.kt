@@ -35,7 +35,7 @@ class PluginUtilities {
             return context.getString(stringRes)
         }
         var gson = Gson()
-        fun sendEvent(event: RouteProgress) {
+        fun sendRouteEvent(event: RouteProgress) {
             val dataString = gson.toJson(event)
             val jsonString = "{" +
                     "  \"eventType\": \"${MapBoxEvents.PROGRESS_CHANGE.value}\"," +
