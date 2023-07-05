@@ -8,6 +8,8 @@ import android.os.Build
 import com.eopeter.fluttermapboxnavigation.FlutterMapboxNavigationPlugin
 import com.eopeter.fluttermapboxnavigation.models.MapBoxEvents
 import com.eopeter.fluttermapboxnavigation.models.MapBoxRouteProgressEvent
+import com.google.gson.Gson
+import com.mapbox.navigation.base.trip.model.RouteProgress
 import io.flutter.plugin.common.MethodCall
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -32,9 +34,9 @@ class PluginUtilities {
             }
             return context.getString(stringRes)
         }
-
-        fun sendEvent(event: MapBoxRouteProgressEvent) {
-            val dataString = event.toJson()
+        var gson = Gson()
+        fun sendEvent(event: RouteProgress) {
+            val dataString = gson.toJson(event)
             val jsonString = "{" +
                     "  \"eventType\": \"${MapBoxEvents.PROGRESS_CHANGE.value}\"," +
                     "  \"data\": $dataString" +
