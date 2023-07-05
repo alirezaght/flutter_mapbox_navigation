@@ -13,7 +13,6 @@ import com.eopeter.fluttermapboxnavigation.models.MapBoxEvents
 import com.eopeter.fluttermapboxnavigation.models.MapBoxRouteProgressEvent
 import com.eopeter.fluttermapboxnavigation.models.Waypoint
 import com.eopeter.fluttermapboxnavigation.models.WaypointSet
-import com.eopeter.fluttermapboxnavigation.utilities.CustomInfoPanelEndNavButtonBinder
 import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities
 import com.google.gson.Gson
 import com.mapbox.api.directions.v5.DirectionsCriteria
@@ -40,6 +39,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.JsonObject
 import com.mapbox.api.directions.v5.models.VoiceInstructions
 import com.mapbox.api.speech.v1.MapboxSpeech
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
@@ -193,6 +193,7 @@ open class TurnByTurn(
 
             "reCenter" -> {
                 SharedApp.store.dispatch(CameraAction.SetCameraMode(TargetCameraMode.Following))
+                SharedApp.store.dispatch(CameraAction.UpdatePadding(EdgeInsets(0.0, 0.0, 40.0, 0.0)))
                 result.success(true)
             }
 
@@ -267,7 +268,7 @@ open class TurnByTurn(
                     reasons: List<RouterFailure>,
                     routeOptions: RouteOptions
                 ) {
-                    PluginUtilities.sendEvent(MapBoxEvents.ROUTE_BUILD_FAILED)
+                    PluginUtilities.sendEvent(MapBoxEvents.ROUTE_BUILD_FAILED, "")
                     result.success(false)
                 }
 
@@ -275,7 +276,7 @@ open class TurnByTurn(
                     routeOptions: RouteOptions,
                     routerOrigin: RouterOrigin
                 ) {
-                    PluginUtilities.sendEvent(MapBoxEvents.ROUTE_BUILD_CANCELLED)
+                    PluginUtilities.sendEvent(MapBoxEvents.ROUTE_BUILD_CANCELLED, "")
                     result.success(false)
                 }
             }
@@ -287,7 +288,7 @@ open class TurnByTurn(
         this.currentRoutes = null
         val navigation = MapboxNavigationApp.current()
         navigation?.stopTripSession()
-        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
+        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED, "")
     }
 
     private fun startFreeDrive() {
@@ -322,21 +323,21 @@ open class TurnByTurn(
     @SuppressLint("MissingPermission")
     private fun startNavigation(primaryIndex: Int) {
         if (this.currentRoutes == null) {
-            PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
+            PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED, "")
             return
         }
         var routes =
             currentRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
         applyMute()
         this.binding.navigationView.api.startActiveGuidance(routes)
-        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_RUNNING)
+        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_RUNNING, "")
     }
 
     private fun finishNavigation(isOffRouted: Boolean = false) {
         this.unregisterObservers()
         MapboxNavigationApp.current()!!.stopTripSession()
         this.isNavigationCanceled = true
-        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED)
+        PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED, "")
     }
 
     private fun setOptions(arguments: Map<*, *>) {
@@ -562,9 +563,7 @@ open class TurnByTurn(
             try {
                 this.distanceRemaining = routeProgress.distanceRemaining
                 this.durationRemaining = routeProgress.durationRemaining
-
-                val progressEvent = MapBoxRouteProgressEvent(routeProgress)
-                PluginUtilities.sendEvent(progressEvent)
+                PluginUtilities.sendEvent(routeProgress)
             } catch (_: java.lang.Exception) {
                 // handle this error
             }
@@ -591,7 +590,7 @@ open class TurnByTurn(
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
         override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
-            PluginUtilities.sendEvent(MapBoxEvents.ON_ARRIVAL)
+            PluginUtilities.sendEvent(MapBoxEvents.ON_ARRIVAL, "")
         }
 
         override fun onNextRouteLegStart(routeLegProgress: RouteLegProgress) {
