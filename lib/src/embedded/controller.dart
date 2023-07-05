@@ -173,11 +173,10 @@ class MapBoxNavigationViewController {
   RouteEvent _parseRouteEvent(String jsonString) {
     RouteEvent event;
     final map = json.decode(jsonString) as Map<String, dynamic>;
-    final progressEvent = RouteProgressEvent.fromJson(map);
-    if (progressEvent.isProgressEvent!) {
+    if (map["arrived"] != null) {
       event = RouteEvent(
         eventType: MapBoxEvent.progress_change,
-        data: progressEvent,
+        data: jsonString,
       );
     } else {
       event = RouteEvent.fromJson(map);
