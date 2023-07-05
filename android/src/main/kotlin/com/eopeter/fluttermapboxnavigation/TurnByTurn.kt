@@ -563,7 +563,7 @@ open class TurnByTurn(
             try {
                 this.distanceRemaining = routeProgress.distanceRemaining
                 this.durationRemaining = routeProgress.durationRemaining
-                PluginUtilities.sendEvent(routeProgress)
+                PluginUtilities.sendRouteEvent(routeProgress)
             } catch (_: java.lang.Exception) {
                 // handle this error
             }
