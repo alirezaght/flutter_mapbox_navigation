@@ -39,6 +39,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.JsonObject
 import com.mapbox.api.directions.v5.models.VoiceInstructions
 import com.mapbox.api.speech.v1.MapboxSpeech
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.plugin.animation.camera
@@ -105,7 +106,6 @@ open class TurnByTurn(
 
         // initialize navigation trip observers
         this.registerObservers()
-
 
         this.binding.navigationView.customizeViewOptions {
             mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
@@ -193,7 +193,6 @@ open class TurnByTurn(
 
             "reCenter" -> {
                 SharedApp.store.dispatch(CameraAction.SetCameraMode(TargetCameraMode.Following))
-                SharedApp.store.dispatch(CameraAction.UpdatePadding(EdgeInsets(0.0, 0.0, 40.0, 0.0)))
                 result.success(true)
             }
 
@@ -233,6 +232,7 @@ open class TurnByTurn(
 
     @OptIn(ExperimentalPreviewMapboxNavigationAPI::class)
     private fun getRoute(context: Context, result: MethodChannel.Result) {
+
         this.requestId = MapboxNavigationApp.current()!!.requestRoutes(
             routeOptions = RouteOptions
                 .builder()
@@ -257,9 +257,10 @@ open class TurnByTurn(
                     this@TurnByTurn.binding.navigationView.api.routeReplayEnabled(
                         this@TurnByTurn.simulateRoute
                     )
+                    this@TurnByTurn.binding.navigationView.api.startRoutePreview(routes)
 
 //                    MapboxNavigationApp.current()!!.moveRoutesFromPreviewToNavigator();
-                    this@TurnByTurn.binding.navigationView.api.startRoutePreview(routes)
+
 
 
                 }
@@ -429,7 +430,8 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.registerLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.registerRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.registerArrivalObserver(this.arrivalObserver)
-        MapboxNavigationApp.current()?.registerRouteAlternativesObserver(this.alternativeRoutesObserver)
+        MapboxNavigationApp.current()
+            ?.registerRouteAlternativesObserver(this.alternativeRoutesObserver)
     }
 
     open fun unregisterObservers() {
@@ -439,7 +441,8 @@ open class TurnByTurn(
         MapboxNavigationApp.current()?.unregisterLocationObserver(this.locationObserver)
         MapboxNavigationApp.current()?.unregisterRouteProgressObserver(this.routeProgressObserver)
         MapboxNavigationApp.current()?.unregisterArrivalObserver(this.arrivalObserver)
-        MapboxNavigationApp.current()?.unregisterRouteAlternativesObserver(this.alternativeRoutesObserver)
+        MapboxNavigationApp.current()
+            ?.unregisterRouteAlternativesObserver(this.alternativeRoutesObserver)
         if (this.requestId != null)
             MapboxNavigationApp.current()?.cancelRouteRequest(this.requestId!!)
     }
@@ -570,23 +573,24 @@ open class TurnByTurn(
         }
     }
 
-    private val alternativeRoutesObserver: NavigationRouteAlternativesObserver = object: NavigationRouteAlternativesObserver {
-        override fun onRouteAlternatives(
-            routeProgress: RouteProgress,
-            alternatives: List<NavigationRoute>,
-            routerOrigin: RouterOrigin
-        ) {
-            this@TurnByTurn.alternateRoutes = alternatives
-            PluginUtilities.sendEvent(
-                MapBoxEvents.ROUTE_ALTERNATE_BUILT,
-                Gson().toJson(alternatives.map { it.directionsRoute.toJson() })
-            )
-        }
+    private val alternativeRoutesObserver: NavigationRouteAlternativesObserver =
+        object : NavigationRouteAlternativesObserver {
+            override fun onRouteAlternatives(
+                routeProgress: RouteProgress,
+                alternatives: List<NavigationRoute>,
+                routerOrigin: RouterOrigin
+            ) {
+                this@TurnByTurn.alternateRoutes = alternatives
+                PluginUtilities.sendEvent(
+                    MapBoxEvents.ROUTE_ALTERNATE_BUILT,
+                    Gson().toJson(alternatives.map { it.directionsRoute.toJson() })
+                )
+            }
 
-        override fun onRouteAlternativesError(error: RouteAlternativesError) {
-        }
+            override fun onRouteAlternativesError(error: RouteAlternativesError) {
+            }
 
-    }
+        }
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
         override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
