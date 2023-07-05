@@ -17,6 +17,7 @@ import com.eopeter.fluttermapboxnavigation.models.WaypointSet
 import com.eopeter.fluttermapboxnavigation.utilities.CustomInfoPanelEndNavButtonBinder
 import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities
 import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities.Companion.sendEvent
+import com.eopeter.fluttermapboxnavigation.utilities.PluginUtilities.Companion.sendRouteEvent
 import com.google.gson.Gson
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -318,10 +319,9 @@ class NavigationActivity : AppCompatActivity() {
      */
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
         //Notify the client
-        val progressEvent = MapBoxRouteProgressEvent(routeProgress)
         FlutterMapboxNavigationPlugin.distanceRemaining = routeProgress.distanceRemaining
         FlutterMapboxNavigationPlugin.durationRemaining = routeProgress.durationRemaining
-        sendEvent(progressEvent)
+        sendRouteEvent(routeProgress)
     }
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
