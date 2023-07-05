@@ -321,7 +321,8 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                                                             routingProvider: MapboxRoutingProvider(.hybrid),
                                                             credentials: NavigationSettings.shared.directions.credentials,
                                                             locationSource: navLocationManager,
-                                                    simulating: .never)
+                                                    simulating: self._simulateRoute ? .always : .never)
+        
         navigationService.delegate = self
         
 //        var dayStyle = CustomNightStyle()
@@ -417,7 +418,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
         navigationViewportDataSource.followingMobileCamera.zoom = 13.0
         navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .zero
+        navigationViewportDataSource.followingMobileCamera.padding = .init(top: 0, left: 0, bottom: 40, right: 0)
         //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
 
@@ -443,13 +444,10 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
         if(_eventSink != nil)
         {
             let jsonEncoder = JSONEncoder()
-
-            let progressEvent = MapBoxRouteProgressEvent(progress: progress)
-            progressEvent.currentRouteIndex = self.selectedRouteIndex
-            let progressEventJsonData = try! jsonEncoder.encode(progressEvent)
-            let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii)
-
-            _eventSink!(progressEventJson)
+            let progressEventJsonData = try! jsonEncoder.encode(progress)
+            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {
+                self.sendEvent(eventType: MapBoxEventType.progress_change, data: progressEventJson)
+            }
 
             if(progress.isFinalLeg && progress.currentLegProgress.userHasArrivedAtWaypoint)
             {
