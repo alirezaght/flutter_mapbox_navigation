@@ -9,6 +9,7 @@ class ZeroContainer: ContainerViewController {
     
 }
 
+
 public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformView
 {
     let frame: CGRect
@@ -444,13 +445,15 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
         if(_eventSink != nil)
         {
             let jsonEncoder = JSONEncoder()
-            let progressEventJsonData = try! jsonEncoder.encode(progress)
+            let progressEventJsonData = try! jsonEncoder.encode(MapBoxRouteProgressEvent(progress: progress))
             if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {
+                print(progressEventJson)
                 self.sendEvent(eventType: MapBoxEventType.progress_change, data: progressEventJson)
             }
 
             if(progress.isFinalLeg && progress.currentLegProgress.userHasArrivedAtWaypoint)
             {
+                self.sendEvent(eventType: MapBoxEventType.on_arrival)
                 _eventSink = nil
             }
         }
