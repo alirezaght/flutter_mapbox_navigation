@@ -9,6 +9,7 @@ import com.eopeter.fluttermapboxnavigation.FlutterMapboxNavigationPlugin
 import com.eopeter.fluttermapboxnavigation.models.MapBoxEvents
 import com.eopeter.fluttermapboxnavigation.models.MapBoxRouteProgressEvent
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.mapbox.navigation.base.trip.model.RouteProgress
 import io.flutter.plugin.common.MethodCall
 import java.io.ByteArrayInputStream
@@ -34,22 +35,19 @@ class PluginUtilities {
             }
             return context.getString(stringRes)
         }
+
         var gson = Gson()
         fun sendRouteEvent(event: RouteProgress) {
-            val dataString = gson.toJson(event)
-            FlutterMapboxNavigationPlugin.eventSink?.success(dataString)
+            val dataString = gson.toJson(MapBoxRouteProgressEvent(event).toJsonObject())
+//            val dataString = ""
+            sendEvent(MapBoxEvents.PROGRESS_CHANGE, dataString)
         }
 
         fun sendEvent(event: MapBoxEvents, data: String = "") {
-            val jsonString =
-                if (MapBoxEvents.MILESTONE_EVENT == event || event == MapBoxEvents.USER_OFF_ROUTE || event == MapBoxEvents.ROUTE_BUILT) "{" +
-                        "  \"eventType\": \"${event.value}\"," +
-                        "  \"data\": $data" +
-                        "}" else "{" +
-                        "  \"eventType\": \"${event.value}\"," +
-                        "  \"data\": \"$data\"" +
-                        "}"
-            FlutterMapboxNavigationPlugin.eventSink?.success(jsonString)
+            var obj = JsonObject()
+            obj.addProperty("eventType", event.value)
+            obj.addProperty("data", data)
+            FlutterMapboxNavigationPlugin.eventSink?.success(gson.toJson(obj))
         }
 
         fun getListOfStringById(key: String, call: MethodCall): ArrayList<String> {
