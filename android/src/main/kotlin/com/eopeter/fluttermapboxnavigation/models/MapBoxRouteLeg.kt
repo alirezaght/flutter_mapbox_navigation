@@ -1,49 +1,43 @@
 package com.eopeter.fluttermapboxnavigation.models
 
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.mapbox.api.directions.v5.models.RouteLeg
+import com.mapbox.navigation.base.trip.model.RouteLegProgress
 
-class MapBoxRouteLeg {
 
-    val profileIdentifier: String? = null
-    val name: String? = null
-    private var distance: Double?
-    private var expectedTravelTime: Double?
-    val source: MapBoxLocation = MapBoxLocation("", 0.0, 0.0)
-    val destination: MapBoxLocation = MapBoxLocation("", 0.0, 0.0)
-    private var steps: MutableList<MapBoxRouteStep> = mutableListOf()
+data class MapBoxRouteLeg(val leg: RouteLegProgress?) {
 
-    constructor(leg: RouteLeg) {
-        distance = leg.distance()
-        expectedTravelTime = leg.duration()
-
-        for (step in leg.steps()!!) {
-            steps.add(MapBoxRouteStep(step))
-        }
-    }
+    var step: MapBoxRouteStep? = if (leg?.currentStepProgress?.step == null) null else MapBoxRouteStep(leg.currentStepProgress, leg.currentStepProgress?.step);
+    var nextStep: MapBoxRouteStep? = if (leg?.upcomingStep == null) null else MapBoxRouteStep(null, leg.upcomingStep);
+    var maxSpeed: Int?;
+    var maxSpeedUnit: String?;
+    var duration = leg?.routeLeg?.duration()
+    var distance = leg?.routeLeg?.distance()
+    var summary = leg?.routeLeg?.summary()
 
     fun toJsonObject(): JsonObject {
-        val json = JsonObject()
-
-        if (distance != null) {
-            json.addProperty("distance", distance)
-        }
-
-        if (expectedTravelTime != null) {
-            json.addProperty("expectedTravelTime", expectedTravelTime)
-        }
-
-        if (steps.isNotEmpty()) {
-            val ls = JsonArray()
-
-            for (step in steps) {
-                ls.add(step.toJsonObject())
-            }
-
-            json.add("steps", ls)
-        }
-
-        return json
+        var obj = JsonObject()
+        obj.add("step", step?.toJsonObject())
+        obj.add("nextStep", nextStep?.toJsonObject())
+        obj.addProperty("maxSpeed", maxSpeed)
+        obj.addProperty("maxSpeedUnit", maxSpeedUnit)
+        obj.addProperty("duration", duration)
+        obj.addProperty("distance", distance)
+        obj.addProperty("summary", summary)
+        return obj
     }
+
+    init {
+        var geoIndex = leg?.currentStepProgress?.step?.intersections()
+            ?.get(leg.currentStepProgress?.intersectionIndex ?: 0)?.geometryIndex() ?: -1
+
+        this.maxSpeed =
+            if (geoIndex == -1) null else leg?.routeLeg?.annotation()?.maxspeed()?.get(geoIndex)
+                ?.speed()
+        this.maxSpeedUnit =
+            if (geoIndex == -1) null else leg?.routeLeg?.annotation()?.maxspeed()?.get(geoIndex)
+                ?.unit()
+    }
+
 }
