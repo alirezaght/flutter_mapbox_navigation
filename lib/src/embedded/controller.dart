@@ -10,10 +10,8 @@ import 'package:flutter_mapbox_navigation/src/models/models.dart';
 /// running on the host platform.
 class MapBoxNavigationViewController {
   /// Constructor
-  MapBoxNavigationViewController(
-    int id,
-    ValueSetter<RouteEvent>? eventNotifier,
-  ) {
+  MapBoxNavigationViewController(int id,
+      ValueSetter<RouteEvent>? eventNotifier,) {
     _methodChannel = MethodChannel('flutter_mapbox_navigation/$id');
     _methodChannel.setMethodCallHandler(_handleMethod);
 
@@ -29,19 +27,22 @@ class MapBoxNavigationViewController {
   late StreamSubscription<RouteEvent> _routeEventSubscription;
 
   ///Current Device OS Version
-  Future<String> get platformVersion => _methodChannel
-      .invokeMethod('getPlatformVersion')
-      .then((dynamic result) => result as String);
+  Future<String> get platformVersion =>
+      _methodChannel
+          .invokeMethod('getPlatformVersion')
+          .then((dynamic result) => result as String);
 
   ///Total distance remaining in meters along route.
-  Future<double> get distanceRemaining => _methodChannel
-      .invokeMethod<double>('getDistanceRemaining')
-      .then((dynamic result) => result as double);
+  Future<double> get distanceRemaining =>
+      _methodChannel
+          .invokeMethod<double>('getDistanceRemaining')
+          .then((dynamic result) => result as double);
 
   ///Total seconds remaining on all legs.
-  Future<double> get durationRemaining => _methodChannel
-      .invokeMethod<double>('getDurationRemaining')
-      .then((dynamic result) => result as double);
+  Future<double> get durationRemaining =>
+      _methodChannel
+          .invokeMethod<double>('getDurationRemaining')
+          .then((dynamic result) => result as double);
 
   ///Build the Route Used for the Navigation
   ///
@@ -57,8 +58,8 @@ class MapBoxNavigationViewController {
     assert(wayPoints.length > 1, 'Error: WayPoints must be at least 2');
     if (Platform.isIOS && wayPoints.length > 3 && options?.mode != null) {
       assert(
-        options!.mode != MapBoxNavigationMode.drivingWithTraffic,
-        '''
+      options!.mode != MapBoxNavigationMode.drivingWithTraffic,
+      '''
           Error: Cannot use drivingWithTraffic Mode 
           when you have more than 3 Stops
         ''',
@@ -112,7 +113,8 @@ class MapBoxNavigationViewController {
   }
 
   /// Starts the Navigation
-  Future<bool?> startNavigation({MapBoxOptions? options, int primaryIndex = 0}) async {
+  Future<bool?> startNavigation(
+      {MapBoxOptions? options, int primaryIndex = 0}) async {
     Map<String, dynamic> args = {};
     if (options != null) args = options.toMap();
     args["primaryIndex"] = primaryIndex;
@@ -172,15 +174,8 @@ class MapBoxNavigationViewController {
 
   RouteEvent _parseRouteEvent(String jsonString) {
     RouteEvent event;
-    final map = json.decode(jsonString) as Map<String, dynamic>;
-    if (map["arrived"] != null || map["currentLegProgress"] != null) {
-      event = RouteEvent(
-        eventType: MapBoxEvent.progress_change,
-        data: jsonString,
-      );
-    } else {
-      event = RouteEvent.fromJson(map);
-    }
+    final map = json.decode(jsonString);
+    event = RouteEvent.fromJson(map);
     return event;
   }
 }
