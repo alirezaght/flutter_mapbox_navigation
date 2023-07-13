@@ -40,6 +40,8 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
     var _showEndOfRouteFeedback = true
     var navigationDirections: Directions?
     
+    var alternativeRoutes: [Int: IndexedRouteResponse] = [:]
+    
     func addWayPoints(arguments: NSDictionary?, result: @escaping FlutterResult)
     {
 
@@ -405,15 +407,15 @@ extension NavigationFactory : NavigationViewControllerDelegate {
         if(_eventSink != nil)
         {
             let jsonEncoder = JSONEncoder()
-            
-            let progressEvent = MapBoxRouteProgressEvent(progress: progress)
-            let progressEventJsonData = try! jsonEncoder.encode(progressEvent)
-            let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii)
-            
-            _eventSink!(progressEventJson)
-            
-            if(progress.isFinalLeg && progress.currentLegProgress.userHasArrivedAtWaypoint && !_showEndOfRouteFeedback)
+            let progressEventJsonData = try! jsonEncoder.encode(MapBoxRouteProgressEvent(progress: progress))
+            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {
+                print(progressEventJson)
+                self.sendEvent(eventType: MapBoxEventType.progress_change, data: progressEventJson)
+            }
+
+            if(progress.isFinalLeg && progress.currentLegProgress.userHasArrivedAtWaypoint)
             {
+                self.sendEvent(eventType: MapBoxEventType.on_arrival)
                 _eventSink = nil
             }
         }
@@ -459,5 +461,16 @@ extension NavigationFactory : NavigationViewControllerDelegate {
             _eventSink = nil
             
         }
+    }
+    public func navigationViewController(_ navigationViewController: NavigationViewController, didUpdateAlternatives updatedAlternatives: [AlternativeRoute], removedAlternatives: [AlternativeRoute]) {
+        var routes: [Route] = []
+        self.alternativeRoutes = [:]
+        updatedAlternatives.forEach { route in
+            if (route.indexedRouteResponse.routeResponse.routes != nil) {
+                routes.append(contentsOf: route.indexedRouteResponse.routeResponse.routes!)
+                self.alternativeRoutes[route.indexedRouteResponse.routeIndex] = route.indexedRouteResponse
+            }
+        }
+        self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
     }
 }
