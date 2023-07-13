@@ -560,7 +560,6 @@ open class TurnByTurn(
      * Gets notified with progress along the currently active route.
      */
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
-
         // update flutter events
         if (!this.isNavigationCanceled) {
             try {
