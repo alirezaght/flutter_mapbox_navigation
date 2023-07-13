@@ -1,25 +1,25 @@
 import Foundation
 import MapboxDirections
+import MapboxNavigation
+import MapboxCoreNavigation
 
 public class MapBoxRouteLeg : Codable
 {
-    let profileIdentifier: String
-    let name: String
-    let distance: Double
-    let expectedTravelTime: Double
-    let source: Location
-    let destination: Location
-    var steps: [MapBoxRouteStep] = []
+    var maxSpeed: Double?
+    var maxSpeedUnit: String?
+    var duration: Double?
+    var distance: Double?
+    var summary: String?
+    var step: MapBoxRouteStep?
+    var nextStep: MapBoxRouteStep?
 
-    init(leg: RouteLeg) {
-        profileIdentifier = leg.profileIdentifier.rawValue
-        name = leg.name
-        distance = leg.distance
-        expectedTravelTime = leg.expectedTravelTime
-        source = Location(name: leg.source?.name ?? "source", latitude: leg.source?.coordinate.latitude, longitude: leg.source?.coordinate.longitude)
-        destination = Location(name: leg.destination?.name ?? "source", latitude: leg.destination?.coordinate.latitude, longitude: leg.destination?.coordinate.longitude)
-        for step in leg.steps {
-            steps.append(MapBoxRouteStep(step: step))
-        }
+    init(leg: RouteLeg, progress: RouteProgress) {
+        self.duration = leg.expectedTravelTime
+        self.distance = leg.distance
+        self.summary = leg.name
+        self.step = MapBoxRouteStep(step: progress.currentLegProgress.currentStep, progress: progress.currentLegProgress.currentStepProgress)
+        self.nextStep = progress.upcomingStep == nil ? nil : MapBoxRouteStep(step: progress.upcomingStep!, progress: nil)
+        self.maxSpeed = progress.currentLegProgress.currentSpeedLimit?.value
+        self.maxSpeedUnit = progress.currentLegProgress.currentSpeedLimit?.unit.symbol
     }
 }
