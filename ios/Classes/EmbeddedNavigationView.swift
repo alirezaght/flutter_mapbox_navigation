@@ -19,8 +19,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     let channel: FlutterMethodChannel
     let eventChannel: FlutterEventChannel
     var mute = false
-
-    var alternativeRoutes: [Int: IndexedRouteResponse] = [:]
     
     var navigationMapView: NavigationMapView!
     var arguments: NSDictionary?
