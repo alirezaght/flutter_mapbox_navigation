@@ -320,7 +320,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                                                             routingProvider: MapboxRoutingProvider(.hybrid),
                                                             credentials: NavigationSettings.shared.directions.credentials,
                                                             locationSource: navLocationManager,
-                                                    simulating: self._simulateRoute ? .always : .never)
+                                                    simulating: self._simulateRoute ? .always : .onPoorGPS)
         
         navigationService.delegate = self
         
