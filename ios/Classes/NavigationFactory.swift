@@ -365,18 +365,28 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
         let routes = response.routes
         
         if routes != nil && !routes!.isEmpty {
+            var r: [MapBoxRoute] = []
+            var count = 0
+            routes?.forEach({ _r in
+                r.append(MapBoxRoute(index: count, route: _r))
+                count += 1
+            })
             let jsonEncoder = JSONEncoder()
-            let jsonData = try! jsonEncoder.encode(response.routes!)
+            let jsonData = try! jsonEncoder.encode(r)
             return String(data: jsonData, encoding: String.Encoding.utf8) ?? "{}"
         }
         
         return "{}"
     }
     
-    func encodeRouteResponse(routes: [MapboxDirections.Route]?) -> String {
-        if routes != nil && !routes!.isEmpty {
+    func encodeRouteResponse(responses: [IndexedRouteResponse]?) -> String {
+        if responses != nil && !responses!.isEmpty {
+            var r: [MapBoxRoute] = []
+            responses?.forEach({ _r in
+                r.append(MapBoxRoute(route: _r))
+            })
             let jsonEncoder = JSONEncoder()
-            let jsonData = try! jsonEncoder.encode(routes!)
+            let jsonData = try! jsonEncoder.encode(r)
             return String(data: jsonData, encoding: String.Encoding.utf8) ?? "{}"
         }
         
@@ -471,6 +481,6 @@ extension NavigationFactory : NavigationViewControllerDelegate {
                 self.alternativeRoutes.append(route.indexedRouteResponse)
             }
         }
-        self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
+        self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(responses: self.alternativeRoutes))
     }
 }
