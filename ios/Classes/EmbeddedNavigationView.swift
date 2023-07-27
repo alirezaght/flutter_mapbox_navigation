@@ -444,8 +444,7 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
         {
             let jsonEncoder = JSONEncoder()
             let progressEventJsonData = try! jsonEncoder.encode(MapBoxRouteProgressEvent(progress: progress))
-            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {
-                print(progressEventJson)
+            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {                
                 self.sendEvent(eventType: MapBoxEventType.progress_change, data: progressEventJson)
             }
 
