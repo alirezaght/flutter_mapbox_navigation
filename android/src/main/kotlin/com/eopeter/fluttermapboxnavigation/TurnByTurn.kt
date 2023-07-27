@@ -241,7 +241,7 @@ open class TurnByTurn(
                 .coordinatesList(this.addedWaypoints.coordinatesList())
                 .waypointIndicesList(this.addedWaypoints.waypointsIndices())
                 .waypointNamesList(this.addedWaypoints.waypointsNames())
-                .alternatives(false)
+                .alternatives(this@TurnByTurn.alternatives)
                 .build(),
             callback = object : NavigationRouterCallback {
                 override fun onRoutesReady(
