@@ -40,7 +40,7 @@ public class NavigationFactory : NSObject, FlutterStreamHandler
     var _showEndOfRouteFeedback = true
     var navigationDirections: Directions?
     
-    var alternativeRoutes: [Int: IndexedRouteResponse] = [:]
+    var alternativeRoutes: [IndexedRouteResponse] = []
     
     func addWayPoints(arguments: NSDictionary?, result: @escaping FlutterResult)
     {
@@ -464,11 +464,11 @@ extension NavigationFactory : NavigationViewControllerDelegate {
     }
     public func navigationViewController(_ navigationViewController: NavigationViewController, didUpdateAlternatives updatedAlternatives: [AlternativeRoute], removedAlternatives: [AlternativeRoute]) {
         var routes: [Route] = []
-        self.alternativeRoutes = [:]
+        self.alternativeRoutes = []
         updatedAlternatives.forEach { route in
             if (route.indexedRouteResponse.routeResponse.routes != nil) {
                 routes.append(contentsOf: route.indexedRouteResponse.routeResponse.routes!)
-                self.alternativeRoutes[route.indexedRouteResponse.routeIndex] = route.indexedRouteResponse
+                self.alternativeRoutes.append(route.indexedRouteResponse)
             }
         }
         self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
