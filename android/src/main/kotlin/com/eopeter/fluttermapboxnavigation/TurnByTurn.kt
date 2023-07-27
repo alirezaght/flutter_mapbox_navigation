@@ -168,9 +168,11 @@ open class TurnByTurn(
                 val primaryIndex = arguments?.get("primaryIndex") as Int
                 var routes =
                     alternateRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
-                MapboxNavigationApp.current()!!.setNavigationRoutes(routes)
+                if (routes.isNotEmpty()) {
+                    MapboxNavigationApp.current()!!.setNavigationRoutes(routes)
+                    this.selectedIndex = primaryIndex
+                }
                 result.success(true)
-                this.selectedIndex = primaryIndex
             }
 
             "finishNavigation" -> {
