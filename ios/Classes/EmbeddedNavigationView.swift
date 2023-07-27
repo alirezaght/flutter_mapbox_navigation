@@ -95,9 +95,14 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             else if(call.method == "setAlternate")
             {
                 var index = arguments?["primaryIndex"] as? Int ?? 0
-                strongSelf.navigationService.router.updateRoute(with: strongSelf.alternativeRoutes[index]!, routeOptions: strongSelf.routeOptions!, completion: nil)
+                if let route = strongSelf.alternativeRoutes.first { key, value in
+                    value.routeIndex == index
+                } {
+                    strongSelf.navigationService.router.updateRoute(with: route.value, routeOptions: strongSelf.routeOptions!, completion: nil)
+                    strongSelf.selectedRouteIndex = route.value.routeIndex
+                }
                 result(true)
-                strongSelf.selectedRouteIndex = index
+                
                 
             }
             else if(call.method == "muteToggle")
@@ -444,7 +449,7 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
         {
             let jsonEncoder = JSONEncoder()
             let progressEventJsonData = try! jsonEncoder.encode(MapBoxRouteProgressEvent(progress: progress))
-            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {                
+            if let progressEventJson = String(data: progressEventJsonData, encoding: String.Encoding.ascii) {
                 self.sendEvent(eventType: MapBoxEventType.progress_change, data: progressEventJson)
             }
 
