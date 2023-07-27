@@ -95,10 +95,10 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             else if(call.method == "setAlternate")
             {
                 var index = arguments?["primaryIndex"] as? Int ?? 0
-                if let route = strongSelf.alternativeRoutes.first { key, value in
+                if let route = strongSelf.alternativeRoutes.first { value in
                     value.routeIndex == index
                 } {
-                    strongSelf.navigationService.router.updateRoute(with: route.value, routeOptions: strongSelf.routeOptions!, completion: nil)
+                    strongSelf.navigationService.router.updateRoute(with: route, routeOptions: strongSelf.routeOptions!, completion: nil)
                     strongSelf.selectedRouteIndex = route.value.routeIndex
                 }
                 result(true)
