@@ -463,11 +463,11 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
     
     public func navigationService(_ service: NavigationService, didUpdateAlternatives updatedAlternatives: [AlternativeRoute], removedAlternatives: [AlternativeRoute]) {
         var routes: [Route] = []
-        self.alternativeRoutes = [:]
+        self.alternativeRoutes = []
         updatedAlternatives.forEach { route in
             if (route.indexedRouteResponse.routeResponse.routes != nil) {
                 routes.append(contentsOf: route.indexedRouteResponse.routeResponse.routes!)
-                self.alternativeRoutes[route.indexedRouteResponse.routeIndex] = route.indexedRouteResponse
+                self.alternativeRoutes.append(route.indexedRouteResponse)
             }
         }
         self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
