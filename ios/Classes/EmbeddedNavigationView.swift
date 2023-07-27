@@ -99,7 +99,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                     value.routeIndex == index
                 } {
                     strongSelf.navigationService.router.updateRoute(with: route, routeOptions: strongSelf.routeOptions!, completion: nil)
-                    strongSelf.selectedRouteIndex = route.value.routeIndex
+                    strongSelf.selectedRouteIndex = route.routeIndex
                 }
                 result(true)
                 
