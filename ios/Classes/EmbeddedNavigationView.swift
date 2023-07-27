@@ -460,18 +460,7 @@ extension FlutterMapboxNavigationView : NavigationServiceDelegate {
             }
         }
     }
-    
-    public func navigationService(_ service: NavigationService, didUpdateAlternatives updatedAlternatives: [AlternativeRoute], removedAlternatives: [AlternativeRoute]) {
-        var routes: [Route] = []
-        self.alternativeRoutes = []
-        updatedAlternatives.forEach { route in
-            if (route.indexedRouteResponse.routeResponse.routes != nil) {
-                routes.append(contentsOf: route.indexedRouteResponse.routeResponse.routes!)
-                self.alternativeRoutes.append(route.indexedRouteResponse)
-            }
-        }
-        self.sendEvent(eventType: MapBoxEventType.route_alternate_built, data: self.encodeRouteResponse(routes: routes))
-    }
+        
 }
 
 extension FlutterMapboxNavigationView : NavigationMapViewDelegate {
@@ -528,7 +517,7 @@ extension FlutterMapboxNavigationView : UIGestureRecognizerDelegate {
                 case .failure(let error):
                     print(error.localizedDescription)
                     strongSelf.sendEvent(eventType: MapBoxEventType.route_build_failed)
-                case .success(let response):
+                case .success(let response):                    
                     guard let routes = response.routes, let route = response.routes?.first else {
                         strongSelf.sendEvent(eventType: MapBoxEventType.route_build_failed)
                         return
