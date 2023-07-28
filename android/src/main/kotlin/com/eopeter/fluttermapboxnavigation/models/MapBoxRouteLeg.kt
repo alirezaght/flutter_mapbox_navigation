@@ -3,11 +3,39 @@ package com.eopeter.fluttermapboxnavigation.models
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.api.directions.v5.models.RouteLeg
 import com.mapbox.navigation.base.trip.model.RouteLegProgress
 
 
-data class MapBoxRouteLeg(val leg: RouteLegProgress?) {
+data class MapBoxRoute(val route: DirectionsRoute) {
+    var routeIndex = route.routeIndex()
+    var distance = route.distance()
+    var duration = route.duration()
+    var legs: JsonArray = JsonArray()
+    init {
+        route.legs()?.forEach { routeLeg ->
+            var leg = MapBoxRouteLeg(null)
+            leg.distance = routeLeg.distance()
+            leg.duration = routeLeg.duration()
+            leg.summary = routeLeg.summary()
+            legs.add(leg.toJsonObject())
+        }
+    }
 
+    fun toJsonObject(): JsonObject {
+        var obj = JsonObject()
+        obj.addProperty("routeIndex", routeIndex)
+        obj.addProperty("distance", distance)
+        obj.addProperty("duration", duration)
+        obj.add("legs", legs)
+        return obj
+    }
+
+}
+
+
+data class MapBoxRouteLeg(val leg: RouteLegProgress?) {
     var step: MapBoxRouteStep? = if (leg?.currentStepProgress?.step == null) null else MapBoxRouteStep(leg.currentStepProgress, leg.currentStepProgress?.step);
     var nextStep: MapBoxRouteStep? = if (leg?.upcomingStep == null) null else MapBoxRouteStep(null, leg.upcomingStep);
     var maxSpeed: Int?;
