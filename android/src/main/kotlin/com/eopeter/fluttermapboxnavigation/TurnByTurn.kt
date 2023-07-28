@@ -104,9 +104,6 @@ open class TurnByTurn(
     open fun initNavigation() {
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
-            .routeAlternativesOptions(
-                RouteAlternativesOptions.Builder().intervalMillis(30000).build()
-            )
             .build()
         MapboxNavigationApp
             .setup(navigationOptions)
