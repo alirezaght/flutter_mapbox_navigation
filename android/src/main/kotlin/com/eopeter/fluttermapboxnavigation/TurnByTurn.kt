@@ -38,6 +38,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.JsonObject
+import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.VoiceInstructions
 import com.mapbox.api.speech.v1.MapboxSpeech
 import com.mapbox.maps.CameraOptions
@@ -47,6 +48,8 @@ import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.navigation.base.ExperimentalPreviewMapboxNavigationAPI
+import com.mapbox.navigation.base.route.RouteAlternativesOptions
+import com.mapbox.navigation.base.route.toNavigationRoute
 import com.mapbox.navigation.base.trip.notification.TripNotificationInterceptor
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesObserver
@@ -55,6 +58,7 @@ import com.mapbox.navigation.core.internal.extensions.flowVoiceInstructions
 import com.mapbox.navigation.core.preview.RoutesPreviewObserver
 import com.mapbox.navigation.core.routealternatives.NavigationRouteAlternativesObserver
 import com.mapbox.navigation.core.routealternatives.RouteAlternativesError
+import com.mapbox.navigation.core.routealternatives.RouteAlternativesObserver
 import com.mapbox.navigation.core.routerefresh.RouteRefreshStatesObserver
 import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver
 import com.mapbox.navigation.dropin.NavigationView
@@ -100,6 +104,9 @@ open class TurnByTurn(
     open fun initNavigation() {
         val navigationOptions = NavigationOptions.Builder(this.context)
             .accessToken(this.token)
+            .routeAlternativesOptions(
+                RouteAlternativesOptions.Builder().intervalMillis(30000).build()
+            )
             .build()
         MapboxNavigationApp
             .setup(navigationOptions)
@@ -168,9 +175,9 @@ open class TurnByTurn(
                 val arguments = methodCall.arguments as? Map<*, *>
                 val primaryIndex = arguments?.get("primaryIndex") as Int
                 var routes =
-                    alternateRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex == primaryIndex }
+                    alternateRoutes!!.filter { navigationRoute -> navigationRoute.routeIndex() == primaryIndex.toString() }
                 if (routes.isNotEmpty()) {
-                    MapboxNavigationApp.current()!!.setNavigationRoutes(routes)
+                    MapboxNavigationApp.current()!!.setNavigationRoutes(routes.map { it.toNavigationRoute(RouterOrigin.Offboard) })
                     this.selectedIndex = primaryIndex
                 }
                 result.success(true)
@@ -263,7 +270,6 @@ open class TurnByTurn(
                     this@TurnByTurn.binding.navigationView.api.startRoutePreview(routes)
 
 //                    MapboxNavigationApp.current()!!.moveRoutesFromPreviewToNavigator();
-
 
 
                 }
@@ -502,7 +508,7 @@ open class TurnByTurn(
     private var isOptimized = false
 
     private var currentRoutes: List<NavigationRoute>? = null
-    private var alternateRoutes: List<NavigationRoute>? = null
+    private var alternateRoutes: List<DirectionsRoute>? = null
     private var isNavigationCanceled = false
 
     /**
@@ -575,23 +581,13 @@ open class TurnByTurn(
         }
     }
 
-    private val alternativeRoutesObserver: NavigationRouteAlternativesObserver =
-        object : NavigationRouteAlternativesObserver {
-            override fun onRouteAlternatives(
-                routeProgress: RouteProgress,
-                alternatives: List<NavigationRoute>,
-                routerOrigin: RouterOrigin
-            ) {
-                this@TurnByTurn.alternateRoutes = alternatives
-                PluginUtilities.sendEvent(
-                    MapBoxEvents.ROUTE_ALTERNATE_BUILT,
-                    Gson().toJson(alternatives.map { MapBoxRoute(it.directionsRoute).toJsonObject() })
-                )
-            }
-
-            override fun onRouteAlternativesError(error: RouteAlternativesError) {
-            }
-
+    private val alternativeRoutesObserver: RouteAlternativesObserver =
+        RouteAlternativesObserver { routeProgress, alternatives, routerOrigin ->
+            this@TurnByTurn.alternateRoutes = alternatives
+            PluginUtilities.sendEvent(
+                MapBoxEvents.ROUTE_ALTERNATE_BUILT,
+                Gson().toJson(alternatives.map { MapBoxRoute(it).toJsonObject() })
+            )
         }
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
