@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import com.eopeter.fluttermapboxnavigation.databinding.NavigationActivityBinding
 import com.eopeter.fluttermapboxnavigation.models.MapBoxEvents
+import com.eopeter.fluttermapboxnavigation.models.MapBoxRoute
 import com.eopeter.fluttermapboxnavigation.models.MapBoxRouteProgressEvent
 import com.eopeter.fluttermapboxnavigation.models.Waypoint
 import com.eopeter.fluttermapboxnavigation.models.WaypointSet
@@ -253,7 +254,7 @@ open class TurnByTurn(
                     this@TurnByTurn.currentRoutes = routes
                     PluginUtilities.sendEvent(
                         MapBoxEvents.ROUTE_BUILT,
-                        Gson().toJson(routes.map { it.directionsRoute.toJson() })
+                        Gson().toJson(routes.map { MapBoxRoute(it.directionsRoute).toJsonObject() })
                     )
                     result.success(true)
                     this@TurnByTurn.binding.navigationView.api.routeReplayEnabled(
@@ -548,7 +549,7 @@ open class TurnByTurn(
                         this@TurnByTurn.currentRoutes = routes
                         PluginUtilities.sendEvent(
                             MapBoxEvents.ROUTE_BUILT,
-                            Gson().toJson(routes.map { it.directionsRoute.toJson() })
+                            Gson().toJson(routes.map { MapBoxRoute(it.directionsRoute).toJsonObject() })
                         )
                     }
                 }
@@ -584,7 +585,7 @@ open class TurnByTurn(
                 this@TurnByTurn.alternateRoutes = alternatives
                 PluginUtilities.sendEvent(
                     MapBoxEvents.ROUTE_ALTERNATE_BUILT,
-                    Gson().toJson(alternatives.map { it.directionsRoute.toJson() })
+                    Gson().toJson(alternatives.map { MapBoxRoute(it.directionsRoute).toJsonObject() })
                 )
             }
 
