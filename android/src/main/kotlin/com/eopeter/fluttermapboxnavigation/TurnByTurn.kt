@@ -43,6 +43,7 @@ import com.mapbox.api.directions.v5.models.VoiceInstructions
 import com.mapbox.api.speech.v1.MapboxSpeech
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.extension.style.style
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
@@ -118,6 +119,11 @@ open class TurnByTurn(
             mapStyleUriDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
             mapStyleUriNight = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
 
+            cameraOptions {
+                padding(EdgeInsets(50.0, 50.0, 50.0, 50.0))
+                pitch(15.0)
+                zoom(15.0)
+            }
             showTripProgress = false
             showSpeedLimit = false
             bannerInstructionsEnabled = false
@@ -200,6 +206,7 @@ open class TurnByTurn(
 
             "reCenter" -> {
                 SharedApp.store.dispatch(CameraAction.SetCameraMode(TargetCameraMode.Following))
+                SharedApp.store.dispatch(CameraAction.UpdatePadding(padding = EdgeInsets(50.0, 50.0, 50.0, 50.0)))
                 result.success(true)
             }
 
@@ -311,6 +318,8 @@ open class TurnByTurn(
         this.startNavigation(arguments?.get("primaryIndex") as Int)
 
         if (this.currentRoutes != null) {
+            SharedApp.store.dispatch(CameraAction.SetCameraMode(TargetCameraMode.Following))
+            SharedApp.store.dispatch(CameraAction.UpdatePadding(padding = EdgeInsets(50.0, 50.0, 50.0, 50.0)))
             result.success(true)
         } else {
             result.success(false)
