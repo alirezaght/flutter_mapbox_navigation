@@ -111,6 +111,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                 strongSelf.applyMute()
             }
             else if(call.method == "reCenter"){
+                strongSelf.moveCameraToCenter();
                 //used to recenter map from user action during navigation
                 strongSelf._navigationViewController?.navigationMapView?.navigationCamera.follow()
 //                strongSelf.navigationMapView.navigationCamera.follow()
@@ -406,8 +407,9 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         navigationViewportDataSource.followingMobileCamera.zoom = _zoom
         navigationViewportDataSource.followingMobileCamera.bearing = _bearing
         navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .zero
+        navigationViewportDataSource.followingMobileCamera.padding = .init(top: 50, left: 50, bottom: 50, right: 50)
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
+        _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
     }
 
     func moveCameraToCenter()
@@ -420,12 +422,12 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-        navigationViewportDataSource.followingMobileCamera.zoom = 13.0
+        navigationViewportDataSource.followingMobileCamera.zoom = 15
         navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .zero
+        navigationViewportDataSource.followingMobileCamera.padding = .init(top: 50, left: 50, bottom: 50, right: 50)
         //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
-
+        _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
         // Create a camera that rotates around the same center point, rotating 180°.
         // `fromDistance:` is meters above mean sea level that an eye would have to be in order to see what the map view is showing.
         //let camera = NavigationCamera( Camera(lookingAtCenter: mapView.centerCoordinate, altitude: 2500, pitch: 15, heading: 180)
