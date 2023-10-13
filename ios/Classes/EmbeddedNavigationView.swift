@@ -410,6 +410,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         navigationViewportDataSource.followingMobileCamera.padding = .init(top: 50, left: 50, bottom: 50, right: 50)
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
+        _navigationViewController?.navigationMapView?.navigationCamera.follow()
     }
 
     func moveCameraToCenter()
