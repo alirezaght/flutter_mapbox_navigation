@@ -403,7 +403,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     func moveCameraToCoordinates(latitude: Double, longitude: Double) {
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+//        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         navigationViewportDataSource.followingMobileCamera.zoom = _zoom
         navigationViewportDataSource.followingMobileCamera.bearing = _bearing
         navigationViewportDataSource.followingMobileCamera.pitch = 15
