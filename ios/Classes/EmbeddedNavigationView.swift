@@ -407,7 +407,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         navigationViewportDataSource.followingMobileCamera.zoom = _zoom
         navigationViewportDataSource.followingMobileCamera.bearing = _bearing
         navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .init(top: 50, left: 50, bottom: 50, right: 50)
+        navigationViewportDataSource.followingMobileCamera.padding = .zero
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.follow()
@@ -423,12 +423,13 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-        navigationViewportDataSource.followingMobileCamera.zoom = 15
+        navigationViewportDataSource.followingMobileCamera.zoom = 13
         navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .init(top: 50, left: 50, bottom: 50, right: 50)
+        navigationViewportDataSource.followingMobileCamera.padding = .zero
         //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
+        _navigationViewController?.navigationMapView?.navigationCamera.follow()
         // Create a camera that rotates around the same center point, rotating 180°.
         // `fromDistance:` is meters above mean sea level that an eye would have to be in order to see what the map view is showing.
         //let camera = NavigationCamera( Camera(lookingAtCenter: mapView.centerCoordinate, altitude: 2500, pitch: 15, heading: 180)
