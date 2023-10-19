@@ -111,7 +111,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                 strongSelf.applyMute()
             }
             else if(call.method == "reCenter"){
-                strongSelf.moveCameraToCenter();
+//                strongSelf.moveCameraToCenter();
                 //used to recenter map from user action during navigation
                 strongSelf._navigationViewController?.navigationMapView?.navigationCamera.follow()
 //                strongSelf.navigationMapView.navigationCamera.follow()
