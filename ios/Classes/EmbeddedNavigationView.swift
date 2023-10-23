@@ -404,7 +404,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
 //        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        navigationViewportDataSource.followingMobileCamera.zoom = 15
+        navigationViewportDataSource.followingMobileCamera.zoom = _zoom
         navigationViewportDataSource.followingMobileCamera.bearing = _bearing
         navigationViewportDataSource.followingMobileCamera.pitch = 15
         navigationViewportDataSource.followingMobileCamera.padding = .zero
@@ -423,7 +423,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
         navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-        navigationViewportDataSource.followingMobileCamera.zoom = 15
+        navigationViewportDataSource.followingMobileCamera.zoom = 13
         navigationViewportDataSource.followingMobileCamera.pitch = 15
         navigationViewportDataSource.followingMobileCamera.padding = .zero
         //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
