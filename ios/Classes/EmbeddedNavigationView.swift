@@ -410,7 +410,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         navigationViewportDataSource.followingMobileCamera.padding = .zero
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
-        _navigationViewController?.navigationMapView?.navigationCamera.follow()
+        
     }
 
     func moveCameraToCenter()
@@ -429,7 +429,6 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
         navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
         _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
-        _navigationViewController?.navigationMapView?.navigationCamera.follow()
         // Create a camera that rotates around the same center point, rotating 180°.
         // `fromDistance:` is meters above mean sea level that an eye would have to be in order to see what the map view is showing.
         //let camera = NavigationCamera( Camera(lookingAtCenter: mapView.centerCoordinate, altitude: 2500, pitch: 15, heading: 180)
