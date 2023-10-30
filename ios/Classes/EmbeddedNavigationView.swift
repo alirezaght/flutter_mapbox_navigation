@@ -19,7 +19,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     let channel: FlutterMethodChannel
     let eventChannel: FlutterEventChannel
     var mute = false
-    
+    var cameraSetup = false
     var navigationMapView: NavigationMapView!
     var arguments: NSDictionary?
 
@@ -401,41 +401,47 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
     }
 
     func moveCameraToCoordinates(latitude: Double, longitude: Double) {
-        let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
-        navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-//        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        navigationViewportDataSource.followingMobileCamera.zoom = 15
-        navigationViewportDataSource.followingMobileCamera.bearing = _bearing
-        navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .zero
-        navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
-        _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
+        if (!cameraSetup) {
+            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
+            navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
+            //        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            navigationViewportDataSource.followingMobileCamera.zoom = 15
+            navigationViewportDataSource.followingMobileCamera.bearing = _bearing
+            navigationViewportDataSource.followingMobileCamera.pitch = 15
+            navigationViewportDataSource.followingMobileCamera.padding = .zero
+            navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
+            _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
+            cameraSetup = true;
+        }
         
     }
 
     func moveCameraToCenter()
     {
-        var duration = 5.0
-        if(!_animateBuildRoute)
-        {
-            duration = 0.0
+        if (!cameraSetup) {
+            var duration = 5.0
+            if(!_animateBuildRoute)
+            {
+                duration = 0.0
+            }
+            
+            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
+            navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
+            navigationViewportDataSource.followingMobileCamera.zoom = 15
+            navigationViewportDataSource.followingMobileCamera.pitch = 15
+            navigationViewportDataSource.followingMobileCamera.padding = .zero
+            //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
+            navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
+            _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
+            cameraSetup = true;
+            // Create a camera that rotates around the same center point, rotating 180°.
+            // `fromDistance:` is meters above mean sea level that an eye would have to be in order to see what the map view is showing.
+            //let camera = NavigationCamera( Camera(lookingAtCenter: mapView.centerCoordinate, altitude: 2500, pitch: 15, heading: 180)
+            
+            // Animate the camera movement over 5 seconds.
+            //navigationMapView.mapView.mapboxMap.setCamera(to: CameraOptions(center: navigationMapView.mapView.ma, zoom: 13.0))
+            //(camera, withDuration: duration, animationTimingFunction: CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut))
         }
-
-        let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
-        navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-        navigationViewportDataSource.followingMobileCamera.zoom = 15
-        navigationViewportDataSource.followingMobileCamera.pitch = 15
-        navigationViewportDataSource.followingMobileCamera.padding = .zero
-        //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
-        navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
-        _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
-        // Create a camera that rotates around the same center point, rotating 180°.
-        // `fromDistance:` is meters above mean sea level that an eye would have to be in order to see what the map view is showing.
-        //let camera = NavigationCamera( Camera(lookingAtCenter: mapView.centerCoordinate, altitude: 2500, pitch: 15, heading: 180)
-
-        // Animate the camera movement over 5 seconds.
-        //navigationMapView.mapView.mapboxMap.setCamera(to: CameraOptions(center: navigationMapView.mapView.ma, zoom: 13.0))
-                                       //(camera, withDuration: duration, animationTimingFunction: CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut))
     }
 
 }
