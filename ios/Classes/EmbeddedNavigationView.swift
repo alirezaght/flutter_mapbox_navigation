@@ -276,6 +276,8 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
         let routeOptions = NavigationRouteOptions(waypoints: _wayPoints, profileIdentifier: mode)
         
+        
+        
         if (_allowsUTurnAtWayPoints != nil)
         {
             routeOptions.allowsUTurnAtWaypoint = _allowsUTurnAtWayPoints!
@@ -326,7 +328,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                                                             routingProvider: MapboxRoutingProvider(.hybrid),
                                                             credentials: NavigationSettings.shared.directions.credentials,
                                                             locationSource: navLocationManager,
-                                                    simulating: self._simulateRoute ? .always : .onPoorGPS)
+                                                    simulating: self._simulateRoute ? .always : .never)
         
         navigationService.delegate = self
         
@@ -340,6 +342,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 //            nightStyle.mapStyleURL = URL(string: _mapStyleUrlNight!)!
 //        }
         let navigationOptions = NavigationOptions(styles: [nightStyle], navigationService: navigationService)
+        
         // Remove previous navigation view and controller if any
         if(_navigationViewController?.view != nil){
             _navigationViewController!.view.removeFromSuperview()
@@ -405,9 +408,9 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
             navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
             //        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-            navigationViewportDataSource.followingMobileCamera.zoom = 13
+            navigationViewportDataSource.followingMobileCamera.zoom = 15
             navigationViewportDataSource.followingMobileCamera.bearing = _bearing
-            navigationViewportDataSource.followingMobileCamera.pitch = 13
+            navigationViewportDataSource.followingMobileCamera.pitch = 15
             navigationViewportDataSource.followingMobileCamera.padding = .zero
             navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
             _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
@@ -427,8 +430,8 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             
             let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
             navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-            navigationViewportDataSource.followingMobileCamera.zoom = 13
-            navigationViewportDataSource.followingMobileCamera.pitch = 13
+            navigationViewportDataSource.followingMobileCamera.zoom = 15
+            navigationViewportDataSource.followingMobileCamera.pitch = 15
             navigationViewportDataSource.followingMobileCamera.padding = .zero
             //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
             navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
