@@ -110,8 +110,6 @@ open class TurnByTurn(
             .setup(navigationOptions)
             .attach(this.activity as LifecycleOwner)
 
-        // initialize navigation trip observers
-        this.registerObservers()
 
         this.binding.navigationView.customizeViewOptions {
             mapStyleUrlDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
@@ -119,11 +117,8 @@ open class TurnByTurn(
             mapStyleUriDay = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
             mapStyleUriNight = "mapbox://styles/mapbox/navigation-night-v1?optimize=true"
 
-            cameraOptions {
-                padding(EdgeInsets(50.0, 50.0, 50.0, 50.0))
-                pitch(15.0)
-                zoom(15.0)
-            }
+
+
             showTripProgress = false
             showSpeedLimit = false
             bannerInstructionsEnabled = false
@@ -144,6 +139,11 @@ open class TurnByTurn(
             isInfoPanelHideable = true
             infoPanelForcedState = BottomSheetBehavior.STATE_HIDDEN
         }
+
+        // initialize navigation trip observers
+        this.registerObservers()
+
+
     }
 
     override fun onMethodCall(methodCall: MethodCall, result: MethodChannel.Result) {
@@ -273,9 +273,6 @@ open class TurnByTurn(
                     )
                     this@TurnByTurn.binding.navigationView.api.startRoutePreview(routes)
 
-//                    MapboxNavigationApp.current()!!.moveRoutesFromPreviewToNavigator();
-
-
                 }
 
                 override fun onFailure(
@@ -303,7 +300,6 @@ open class TurnByTurn(
         val navigation = MapboxNavigationApp.current()
         navigation?.stopTripSession()
         PluginUtilities.sendEvent(MapBoxEvents.NAVIGATION_CANCELLED, "")
-        result.success(true)
     }
 
     private fun startFreeDrive() {
@@ -329,12 +325,7 @@ open class TurnByTurn(
 
     private fun finishNavigation(methodCall: MethodCall, result: MethodChannel.Result) {
         this.finishNavigation()
-
-        if (this.currentRoutes != null) {
-            result.success(true)
-        } else {
-            result.success(false)
-        }
+        result.success(true)
     }
 
     @SuppressLint("MissingPermission")
