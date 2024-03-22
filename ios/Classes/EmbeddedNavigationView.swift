@@ -112,7 +112,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
             }
             else if(call.method == "reCenter"){
 //                strongSelf.moveCameraToCenter();
-                //used to recenter map from user action during navigation                
+                //used to recenter map from user action during navigation
                 strongSelf._navigationViewController?.navigationMapView?.navigationCamera.stop()
                 strongSelf._navigationViewController?.navigationMapView?.navigationCamera.follow()
 //                strongSelf.navigationMapView.navigationCamera.follow()
@@ -179,10 +179,10 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
             let initialLatitude = arguments?["initialLatitude"] as? Double ?? currentLocation?.coordinate.latitude
             let initialLongitude = arguments?["initialLongitude"] as? Double ?? currentLocation?.coordinate.longitude
-            if(initialLatitude != nil && initialLongitude != nil)
-            {
-                moveCameraToCoordinates(latitude: initialLatitude!, longitude: initialLongitude!)
-            }
+//            if(initialLatitude != nil && initialLongitude != nil)
+//            {
+                moveCameraToCoordinates(latitude: initialLatitude ?? 0, longitude: initialLongitude ?? 0)
+//            }
 
         }
 
@@ -372,6 +372,7 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
         _navigationViewController?.navigationView.floatingStackView.isHidden = true
         _navigationViewController?.navigationView.wayNameView.isHidden = true
         _navigationViewController?.navigationView.speedLimitView.isHidden = true
+        moveCameraToCoordinates(latitude: 0, longitude: 0)
         ResumeButton.appearance().alpha = 0
         
 
@@ -406,13 +407,14 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
 
     func moveCameraToCoordinates(latitude: Double, longitude: Double) {
         
-            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
+            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .active)
             navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
+      
             //        navigationViewportDataSource.followingMobileCamera.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-            navigationViewportDataSource.followingMobileCamera.zoom = 13
+            navigationViewportDataSource.followingMobileCamera.zoom = 14
             navigationViewportDataSource.followingMobileCamera.bearing = _bearing
-            navigationViewportDataSource.followingMobileCamera.pitch = 13
-            navigationViewportDataSource.followingMobileCamera.padding = .zero
+            navigationViewportDataSource.followingMobileCamera.pitch = 0
+            navigationViewportDataSource.followingMobileCamera.padding = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
             navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
             _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
             
@@ -429,11 +431,11 @@ public class FlutterMapboxNavigationView : NavigationFactory, FlutterPlatformVie
                 duration = 0.0
             }
             
-            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .raw)
+            let navigationViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView, viewportDataSourceType: .active)
             navigationViewportDataSource.options.followingCameraOptions.zoomUpdatesAllowed = false
-            navigationViewportDataSource.followingMobileCamera.zoom = 13
-            navigationViewportDataSource.followingMobileCamera.pitch = 13
-            navigationViewportDataSource.followingMobileCamera.padding = .zero
+            navigationViewportDataSource.followingMobileCamera.zoom = 14
+            navigationViewportDataSource.followingMobileCamera.pitch = 0
+            navigationViewportDataSource.followingMobileCamera.padding = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
             //navigationViewportDataSource.followingMobileCamera.center = mapView?.centerCoordinate
             navigationMapView.navigationCamera.viewportDataSource = navigationViewportDataSource
             _navigationViewController?.navigationMapView?.navigationCamera.viewportDataSource = navigationViewportDataSource
